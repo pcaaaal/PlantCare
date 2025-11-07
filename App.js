@@ -19,6 +19,14 @@ function HomeStack() {
 		<Stack.Navigator screenOptions={{headerShown: false}}>
 			<Stack.Screen name="Home" component={HomeScreen} />
 			<Stack.Screen name="PlantDetail" component={PlantDetailScreen} />
+			<Stack.Screen
+				name="AddPlant"
+				component={AddPlantScreen}
+				options={{
+					presentation: 'modal',
+					animation: 'slide_from_bottom',
+				}}
+			/>
 		</Stack.Navigator>
 	);
 }

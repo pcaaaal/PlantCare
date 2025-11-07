@@ -8,13 +8,14 @@ import {
 	Alert,
 	ScrollView,
 	Image,
+	KeyboardAvoidingView,
 	Platform,
 } from 'react-native';
 import {CameraView, useCameraPermissions} from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import {Ionicons} from '@expo/vector-icons';
 import {usePlants} from '../context/PlantContext';
-import {searchPlants, getPlantByName} from '../data/plantData';
+import {searchPlants} from '../data/plantData';
 
 export default function AddPlantScreen({navigation}) {
 	const [plantName, setPlantName] = useState('');
@@ -138,7 +139,7 @@ export default function AddPlantScreen({navigation}) {
 							setDescription('');
 							setImageUri(null);
 							setSelectedPlant(null);
-							navigation.navigate('HomeTab');
+							navigation.goBack();
 						},
 					},
 				],
@@ -174,15 +175,20 @@ export default function AddPlantScreen({navigation}) {
 	}
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.header}>
+		<KeyboardAvoidingView
+			style={styles.container}
+			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+			keyboardVerticalOffset={0}
+		>
+			{/* Modal Header */}
+			<View style={styles.modalHeader}>
 				<TouchableOpacity
-					style={styles.backButton}
-					onPress={() => navigation.navigate('HomeTab')}
+					style={styles.closeButton}
+					onPress={() => navigation.goBack()}
 				>
-					<Ionicons name="arrow-back" size={24} color="#333" />
+					<Ionicons name="close" size={28} color="#333" />
 				</TouchableOpacity>
-				<Text style={styles.headerTitle}>Add Plant</Text>
+				<Text style={styles.modalTitle}>Add Plant</Text>
 				<TouchableOpacity
 					style={styles.saveButton}
 					onPress={handleAddPlant}
@@ -191,88 +197,114 @@ export default function AddPlantScreen({navigation}) {
 				</TouchableOpacity>
 			</View>
 
-			<ScrollView style={styles.content}>
-				{/* Image Section */}
-				<View style={styles.imageSection}>
+			<ScrollView
+				style={styles.scrollContent}
+				contentContainerStyle={styles.scrollContentContainer}
+				showsVerticalScrollIndicator={false}
+				keyboardShouldPersistTaps="handled"
+			>
+				{/* Image Card */}
+				<TouchableOpacity
+					style={styles.imageCard}
+					onPress={handleTakePicture}
+				>
 					{imageUri ? (
 						<Image
 							source={{uri: imageUri}}
-							style={styles.previewImage}
+							style={styles.imageCardImage}
 						/>
 					) : (
-						<View style={styles.imagePlaceholder}>
+						<View style={styles.imageCardPlaceholder}>
 							<Ionicons
-								name="leaf-outline"
-								size={100}
+								name="camera-outline"
+								size={40}
 								color="#4CAF50"
 							/>
+							<Text style={styles.imageCardText}>Add Photo</Text>
 						</View>
 					)}
-					<TouchableOpacity
-						style={styles.cameraIconButton}
-						onPress={handleTakePicture}
-					>
-						<View style={styles.cameraIcon}>
-							<Ionicons name="camera" size={32} color="#FFFFFF" />
-						</View>
-					</TouchableOpacity>
-				</View>
+				</TouchableOpacity>
 
 				{/* Form Section */}
 				<View style={styles.form}>
-					<Text style={styles.label}>Name</Text>
-					<View style={styles.searchContainer}>
-						<TextInput
-							style={styles.input}
-							value={plantName}
-							onChangeText={setPlantName}
-							placeholder="Rose"
-							placeholderTextColor="#999"
-						/>
-						<View style={styles.searchIcon}>
-							<Ionicons name="search" size={20} color="#999" />
+					<View style={styles.inputGroup}>
+						<Text style={styles.label}>Plant Name *</Text>
+						<View style={styles.searchContainer}>
+							<TextInput
+								style={styles.input}
+								value={plantName}
+								onChangeText={setPlantName}
+								placeholder="e.g., Rose, Monstera"
+								placeholderTextColor="#999"
+							/>
+							<View style={styles.searchIcon}>
+								<Ionicons
+									name="search"
+									size={20}
+									color="#999"
+								/>
+							</View>
 						</View>
+
+						{/* Search Results Dropdown */}
+						{showSearchResults && searchResults.length > 0 && (
+							<View style={styles.searchResults}>
+								{searchResults.slice(0, 5).map((plant) => (
+									<TouchableOpacity
+										key={plant.name}
+										style={styles.searchResultItem}
+										onPress={() => handleSelectPlant(plant)}
+									>
+										<Text style={styles.searchResultText}>
+											{plant.name}
+										</Text>
+										{plant.scientificName && (
+											<Text
+												style={
+													styles.searchResultScientific
+												}
+											>
+												{plant.scientificName[0]}
+											</Text>
+										)}
+									</TouchableOpacity>
+								))}
+							</View>
+						)}
 					</View>
 
-					{/* Search Results Dropdown */}
-					{showSearchResults && searchResults.length > 0 && (
-						<View style={styles.searchResults}>
-							{searchResults.slice(0, 5).map((plant) => (
-								<TouchableOpacity
-									key={plant.name}
-									style={styles.searchResultItem}
-									onPress={() => handleSelectPlant(plant)}
-								>
-									<Text style={styles.searchResultText}>
-										{plant.name}
-									</Text>
-								</TouchableOpacity>
-							))}
-						</View>
-					)}
-
-					<Text style={styles.label}>Description</Text>
-					<TextInput
-						style={[styles.input, styles.textArea]}
-						value={description}
-						onChangeText={setDescription}
-						placeholder="Add notes about your plant..."
-						placeholderTextColor="#999"
-						multiline
-						numberOfLines={4}
-					/>
+					<View style={styles.inputGroup}>
+						<Text style={styles.label}>Notes</Text>
+						<TextInput
+							style={[styles.input, styles.textArea]}
+							value={description}
+							onChangeText={setDescription}
+							placeholder="Add care notes, location, etc."
+							placeholderTextColor="#999"
+							multiline
+							numberOfLines={4}
+						/>
+					</View>
 
 					{selectedPlant && (
 						<View style={styles.plantInfo}>
-							<Text style={styles.plantInfoTitle}>
-								Plant Information:
-							</Text>
+							<View style={styles.plantInfoHeader}>
+								<Ionicons
+									name="information-circle"
+									size={20}
+									color="#4CAF50"
+								/>
+								<Text style={styles.plantInfoTitle}>
+									Plant Care Info
+								</Text>
+							</View>
+
 							{selectedPlant.scientificName && (
 								<View style={styles.plantInfoRow}>
 									<Ionicons
 										name="flask-outline"
 										size={16}
-										color="#4CAF50"
+										color="#666"
 									/>
 									<Text style={styles.plantInfoText}>
 										{selectedPlant.scientificName.join(
@@ -281,24 +313,26 @@ export default function AddPlantScreen({navigation}) {
 									</Text>
 								</View>
 							)}
+
 							{selectedPlant.watering && (
 								<View style={styles.plantInfoRow}>
 									<Ionicons
 										name="water-outline"
 										size={16}
-										color="#4CAF50"
+										color="#666"
 									/>
 									<Text style={styles.plantInfoText}>
 										{selectedPlant.watering}
 									</Text>
 								</View>
 							)}
+
 							{selectedPlant.wateringGeneralBenchmark && (
 								<View style={styles.plantInfoRow}>
 									<Ionicons
 										name="calendar-outline"
 										size={16}
-										color="#4CAF50"
+										color="#666"
 									/>
 									<Text style={styles.plantInfoText}>
 										Water every{' '}
@@ -313,12 +347,13 @@ export default function AddPlantScreen({navigation}) {
 									</Text>
 								</View>
 							)}
+
 							{selectedPlant.sunlight && (
 								<View style={styles.plantInfoRow}>
 									<Ionicons
 										name="sunny-outline"
 										size={16}
-										color="#4CAF50"
+										color="#666"
 									/>
 									<Text style={styles.plantInfoText}>
 										{selectedPlant.sunlight.join(', ')}
@@ -329,7 +364,7 @@ export default function AddPlantScreen({navigation}) {
 					)}
 				</View>
 			</ScrollView>
-		</View>
+		</KeyboardAvoidingView>
 	);
 }
 
@@ -338,30 +373,31 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: '#FFFFFF',
 	},
-	header: {
+	modalHeader: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
 		paddingHorizontal: 20,
-		paddingTop: 50,
-		paddingBottom: 10,
+		paddingTop: 60,
+		paddingBottom: 20,
+		backgroundColor: '#FFFFFF',
+		borderBottomWidth: 1,
+		borderBottomColor: '#F0F0F0',
 	},
-	backButton: {
+	closeButton: {
 		width: 40,
 		height: 40,
-		borderRadius: 20,
-		backgroundColor: '#F5F5F5',
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
-	headerTitle: {
-		fontSize: 18,
-		fontWeight: '600',
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: '700',
 		color: '#333',
 	},
 	saveButton: {
-		paddingHorizontal: 16,
-		paddingVertical: 8,
+		paddingHorizontal: 20,
+		paddingVertical: 10,
 		borderRadius: 20,
 		backgroundColor: '#4CAF50',
 	},
@@ -370,53 +406,53 @@ const styles = StyleSheet.create({
 		fontWeight: '600',
 		color: '#FFFFFF',
 	},
-	content: {
+	scrollContent: {
 		flex: 1,
 	},
-	imageSection: {
-		width: '100%',
-		height: 400,
-		position: 'relative',
+	scrollContentContainer: {
+		paddingHorizontal: 20,
+		paddingTop: 20,
+		paddingBottom: 40,
 	},
-	previewImage: {
+	imageCard: {
+		width: '100%',
+		height: 200,
+		borderRadius: 16,
+		overflow: 'hidden',
+		marginBottom: 24,
+		backgroundColor: '#F5F5F5',
+		borderWidth: 2,
+		borderColor: '#E0E0E0',
+		borderStyle: 'dashed',
+	},
+	imageCardImage: {
 		width: '100%',
 		height: '100%',
 		resizeMode: 'cover',
 	},
-	imagePlaceholder: {
+	imageCardPlaceholder: {
 		width: '100%',
 		height: '100%',
-		backgroundColor: '#E8F5E9',
 		justifyContent: 'center',
 		alignItems: 'center',
+		backgroundColor: '#F9F9F9',
 	},
-	cameraIconButton: {
-		position: 'absolute',
-		bottom: 30,
-		alignSelf: 'center',
-	},
-	cameraIcon: {
-		width: 70,
-		height: 70,
-		borderRadius: 35,
-		backgroundColor: '#4CAF50',
-		justifyContent: 'center',
-		alignItems: 'center',
-		shadowColor: '#000',
-		shadowOffset: {width: 0, height: 4},
-		shadowOpacity: 0.3,
-		shadowRadius: 5,
-		elevation: 8,
+	imageCardText: {
+		fontSize: 16,
+		color: '#4CAF50',
+		marginTop: 8,
+		fontWeight: '500',
 	},
 	form: {
-		padding: 20,
+		gap: 20,
+	},
+	inputGroup: {
+		gap: 8,
 	},
 	label: {
-		fontSize: 16,
+		fontSize: 15,
 		fontWeight: '600',
 		color: '#333',
-		marginBottom: 8,
-		marginTop: 12,
 	},
 	searchContainer: {
 		flexDirection: 'row',
@@ -446,45 +482,58 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: '#E0E0E0',
 		borderRadius: 12,
-		marginTop: 5,
+		marginTop: 8,
 		maxHeight: 200,
 		shadowColor: '#000',
 		shadowOffset: {width: 0, height: 2},
 		shadowOpacity: 0.1,
 		shadowRadius: 4,
 		elevation: 3,
+		overflow: 'hidden',
 	},
 	searchResultItem: {
 		padding: 15,
 		borderBottomWidth: 1,
-		borderBottomColor: '#F0F0F0',
+		borderBottomColor: '#F5F5F5',
 	},
 	searchResultText: {
 		fontSize: 16,
 		color: '#333',
+		fontWeight: '500',
+	},
+	searchResultScientific: {
+		fontSize: 13,
+		color: '#999',
+		marginTop: 2,
+		fontStyle: 'italic',
 	},
 	plantInfo: {
 		backgroundColor: '#F0F7F0',
-		padding: 15,
+		padding: 16,
 		borderRadius: 12,
-		marginTop: 15,
+		gap: 12,
+	},
+	plantInfoHeader: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 8,
+		marginBottom: 4,
 	},
 	plantInfoTitle: {
-		fontSize: 16,
-		fontWeight: 'bold',
+		fontSize: 15,
+		fontWeight: '600',
 		color: '#4CAF50',
-		marginBottom: 12,
 	},
 	plantInfoRow: {
 		flexDirection: 'row',
-		alignItems: 'center',
-		marginBottom: 8,
-		gap: 8,
+		alignItems: 'flex-start',
+		gap: 10,
 	},
 	plantInfoText: {
 		fontSize: 14,
 		color: '#666',
 		flex: 1,
+		lineHeight: 20,
 	},
 	cameraContainer: {
 		flex: 1,
