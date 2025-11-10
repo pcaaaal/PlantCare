@@ -209,22 +209,44 @@ export const PlantProvider = ({children}) => {
 				completedAt: new Date().toISOString(),
 			});
 
-			// Create a new task 3 months later from the task's due date
+			// Create a new task based on the watering interval
 			if (task.intervalDays) {
 				const plant = plants.find((p) => p.id === task.plantId);
 				if (plant) {
-					// Calculate 3 months from the task's original due date
-					const taskDueDate = new Date(task.nextDueDate);
-					const threeMonthsLater = new Date(taskDueDate);
-					threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
-					threeMonthsLater.setHours(18, 0, 0, 0);
+					// Find the last (latest) non-completed task for this plant
+					const plantTasks = currentTasks.filter(
+						t => t.plantId === task.plantId && 
+						!t.completed && 
+						t.id !== taskId &&
+						t.nextDueDate
+					);
+					
+					// Sort by due date to find the latest
+					plantTasks.sort((a, b) => 
+						new Date(b.nextDueDate) - new Date(a.nextDueDate)
+					);
+					
+					const lastTask = plantTasks[0];
+					
+					// Calculate next due date based on the last task or the completed task
+					let nextDueDate;
+					if (lastTask) {
+						// Add intervalDays to the last task's due date
+						nextDueDate = new Date(lastTask.nextDueDate);
+						nextDueDate.setDate(nextDueDate.getDate() + task.intervalDays);
+					} else {
+						// No other tasks exist, add intervalDays to completed task's due date
+						nextDueDate = new Date(task.nextDueDate);
+						nextDueDate.setDate(nextDueDate.getDate() + task.intervalDays);
+					}
+					nextDueDate.setHours(18, 0, 0, 0);
 
 					const newTask = {
 						plantId: task.plantId,
 						type: task.type,
 						title: task.title,
 						intervalDays: task.intervalDays,
-						nextDueDate: threeMonthsLater.toISOString(),
+						nextDueDate: nextDueDate.toISOString(),
 						startDate: task.startDate || new Date().toISOString(),
 						completed: false,
 					};
@@ -234,7 +256,7 @@ export const PlantProvider = ({children}) => {
 					await notificationService.scheduleWateringNotification({
 						plantName: plant.name,
 						plantImage: plant.imageUri,
-						triggerDate: threeMonthsLater,
+						triggerDate: nextDueDate,
 						taskId: createdTask.id,
 					});
 				}
