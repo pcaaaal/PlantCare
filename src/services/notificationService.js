@@ -73,6 +73,14 @@ export const notificationService = {
       const notificationDate = new Date(triggerDate);
       notificationDate.setHours(18, 0, 0, 0);
 
+      // Ensure notification is scheduled for the future
+      // If the date is in the past, don't schedule it
+      const now = new Date();
+      if (notificationDate < now) {
+        console.log('Notification date is in the past, not scheduling:', notificationDate);
+        return null;
+      }
+
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: '💧 Time to Water!',
