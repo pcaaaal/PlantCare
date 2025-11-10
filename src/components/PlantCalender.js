@@ -45,63 +45,26 @@ export default function PlantCalendar({
 	// Calculate task dates for the current month
 	const taskDates = useMemo(() => {
 		const dates = {};
-		const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 		tasks.forEach((task) => {
+			// Skip completed tasks
+			if (task.completed) {
+				return;
+			}
+
 			if (task.nextDueDate) {
 				const dueDate = new Date(task.nextDueDate);
-
-				// If task has repeat interval, calculate all occurrences in this month
-				if (task.repeatInterval && task.repeatInterval.value) {
-					const intervalDays = task.repeatInterval.value;
-
-					// Start from the beginning of the current month
-					const monthStart = new Date(year, month, 1);
-					const monthEnd = new Date(year, month + 1, 0); // Last day of month
-
-					// Find the first occurrence in or before this month
-					let currentTaskDate = new Date(dueDate);
-
-					// Move backwards to find a date before or at the start of this month
-					while (currentTaskDate > monthStart) {
-						currentTaskDate = new Date(
-							currentTaskDate.getTime() -
-								intervalDays * MS_PER_DAY,
-						);
+				
+				// Show task if it's in the current month
+				if (
+					dueDate.getMonth() === month &&
+					dueDate.getFullYear() === year
+				) {
+					const day = dueDate.getDate();
+					if (!dates[day]) {
+						dates[day] = [];
 					}
-
-					// Now move forward and add all dates within this month
-					while (currentTaskDate <= monthEnd) {
-						if (
-							currentTaskDate >= monthStart &&
-							currentTaskDate <= monthEnd
-						) {
-							const day = currentTaskDate.getDate();
-							if (!dates[day]) {
-								dates[day] = [];
-							}
-							// Only add if not already present
-							if (!dates[day].find((t) => t.id === task.id)) {
-								dates[day].push(task);
-							}
-						}
-						currentTaskDate = new Date(
-							currentTaskDate.getTime() +
-								intervalDays * MS_PER_DAY,
-						);
-					}
-				} else {
-					// Single occurrence task
-					if (
-						dueDate.getMonth() === month &&
-						dueDate.getFullYear() === year
-					) {
-						const day = dueDate.getDate();
-						if (!dates[day]) {
-							dates[day] = [];
-						}
-						dates[day].push(task);
-					}
+					dates[day].push(task);
 				}
 			}
 		});

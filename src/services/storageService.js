@@ -198,6 +198,8 @@ export const storageService = {
         const now = new Date();
         const nextDueDate = new Date(now);
         nextDueDate.setDate(nextDueDate.getDate() + task.repeatInterval.value);
+        // Set time to 18:00 (6 PM)
+        nextDueDate.setHours(18, 0, 0, 0);
         
         await this.updateTask(taskId, {
           lastCompletedAt: now.toISOString(),

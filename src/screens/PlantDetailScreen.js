@@ -8,6 +8,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { usePlants } from '../context/PlantContext';
 import PlantCalendar from '../components/PlantCalender';
 
@@ -58,35 +59,6 @@ export default function PlantDetailScreen({ route, navigation }) {
     );
   };
 
-  const getTaskIcon = (type) => {
-    switch (type) {
-      case 'Water':
-        return '💧';
-      case 'Light':
-        return '☀️';
-      case 'Prune':
-        return '✂️';
-      default:
-        return '📋';
-    }
-  };
-
-  const getDaysUntilDue = (dueDate) => {
-    const now = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due - now;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const formatDate = (date) => {
-    const d = new Date(date);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
-
   if (!plant) {
     return (
       <View style={styles.container}>
@@ -119,7 +91,7 @@ export default function PlantDetailScreen({ route, navigation }) {
             style={styles.menuButton}
             onPress={handleDeletePlant}
           >
-            <Text style={styles.menuButtonText}>⋮</Text>
+            <Ionicons name="trash" size={24} color="#000000ff" />
           </TouchableOpacity>
         </View>
 
