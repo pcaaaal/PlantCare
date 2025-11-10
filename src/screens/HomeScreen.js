@@ -14,9 +14,9 @@ const {width} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.6;
 
 export default function HomeScreen({navigation}) {
-	const {plants, getTodaysTasks, completeTask, loading} = usePlants();
+	const {plants, getUpcomingTasks, completeTask, loading} = usePlants();
 
-	const upcomingTasks = getTodaysTasks();
+	const upcomingTasks = getUpcomingTasks();
 
 	const getTaskIcon = (type) => {
 		switch (type) {
