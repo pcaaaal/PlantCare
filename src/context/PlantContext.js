@@ -103,8 +103,15 @@ export const PlantProvider = ({children}) => {
 				const intervalDays = parseWateringInterval(
 					plantData.wateringGeneralBenchmark.value,
 				);
+				const now = new Date();
 				const today = new Date();
 				today.setHours(18, 0, 0, 0);
+				
+				// If it's already past 18:00, start from tomorrow
+				if (now.getHours() >= 18) {
+					today.setDate(today.getDate() + 1);
+				}
+				
 				const startDate = today.toISOString();
 				
 				// Generate tasks for the next 3 months

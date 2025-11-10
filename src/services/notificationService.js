@@ -15,6 +15,9 @@ Notifications.setNotificationHandler({
 /**
  * Notification service for managing plant care reminders
  */
+// Track if notification channel has been set up (Android only)
+let channelConfigured = false;
+
 export const notificationService = {
   /**
    * Request notification permissions
@@ -35,14 +38,16 @@ export const notificationService = {
         return false;
       }
       
-      // Configure channel for Android
-      if (Platform.OS === 'android') {
+      // Configure channel for Android only once
+      // Setting the channel multiple times can trigger unwanted notifications
+      if (Platform.OS === 'android' && !channelConfigured) {
         await Notifications.setNotificationChannelAsync('default', {
           name: 'Plant Care Reminders',
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: '#4CAF50',
         });
+        channelConfigured = true;
       }
       
       return true;
@@ -72,6 +77,16 @@ export const notificationService = {
       // Set notification time to 18:00 (6 PM)
       const notificationDate = new Date(triggerDate);
       notificationDate.setHours(18, 0, 0, 0);
+
+      // Ensure notification is scheduled for the future with at least 1 minute buffer
+      // This prevents immediate notifications when adding plants or completing tasks
+      const now = new Date();
+      const oneMinuteFromNow = new Date(now.getTime() + 60000); // 60000ms = 1 minute
+      
+      if (notificationDate < oneMinuteFromNow) {
+        console.log('Notification date is too soon or in the past, not scheduling:', notificationDate);
+        return null;
+      }
 
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
