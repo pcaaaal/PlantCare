@@ -32,12 +32,17 @@ export default function AddPlantScreen({navigation}) {
 	const {addPlant, searchPlantCatalog, getPlantDetails} = usePlants();
 
 	useEffect(() => {
+		// Don't search if a plant is already selected
+		if (selectedPlant) {
+			setShowSearchResults(false);
+			return;
+		}
+
 		// Debounce search to avoid too many API calls
 		if (searchTimeout.current) {
 			clearTimeout(searchTimeout.current);
 		}
-
-		if (plantName && plantName.length >= 2) {
+		if (plantName && plantName.length >= 3) {
 			setSearchLoading(true);
 			searchTimeout.current = setTimeout(async () => {
 				try {
@@ -50,19 +55,18 @@ export default function AddPlantScreen({navigation}) {
 				} finally {
 					setSearchLoading(false);
 				}
-			}, 500); // Wait 500ms after user stops typing
+			}, 500);
 		} else {
 			setSearchResults([]);
 			setShowSearchResults(false);
 			setSearchLoading(false);
 		}
-
 		return () => {
 			if (searchTimeout.current) {
 				clearTimeout(searchTimeout.current);
 			}
 		};
-	}, [plantName]);
+	}, [plantName, selectedPlant]); // Add selectedPlant to dependencies
 
 	const handleTakePicture = async () => {
 		if (!cameraPermission?.granted) {
@@ -117,8 +121,21 @@ export default function AddPlantScreen({navigation}) {
 	};
 
 	const handleSelectPlant = async (plant) => {
-		setPlantName(plant.name);
+		// Set a placeholder immediately to prevent useEffect from searching
+		setSelectedPlant({
+			name: plant.name,
+			scientificName: plant.scientificName,
+		});
+
+		// Clear search state immediately
 		setShowSearchResults(false);
+		setSearchLoading(false);
+		if (searchTimeout.current) {
+			clearTimeout(searchTimeout.current);
+		}
+
+		// Update plant name
+		setPlantName(plant.name);
 
 		try {
 			// Fetch detailed plant information
@@ -126,11 +143,7 @@ export default function AddPlantScreen({navigation}) {
 			setSelectedPlant(details);
 		} catch (error) {
 			console.error('Error fetching plant details:', error);
-			// If details fetch fails, use basic info from search
-			setSelectedPlant({
-				name: plant.name,
-				scientificName: plant.scientificName,
-			});
+			// selectedPlant already has basic info from above
 		}
 	};
 
@@ -197,7 +210,7 @@ export default function AddPlantScreen({navigation}) {
 							style={styles.cameraButton}
 							onPress={() => setShowCamera(false)}
 						>
-							<Text style={styles.cameraButtonText}>Cancel</Text>
+							<Text style={styles.cameraButtonText}>Close</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={styles.captureButton}
