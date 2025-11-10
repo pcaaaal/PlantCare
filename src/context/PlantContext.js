@@ -7,7 +7,7 @@ const PlantContext = createContext();
 
 // Notification time configuration
 const NOTIFICATION_HOUR = 14;
-const NOTIFICATION_MINUTE = 57;
+const NOTIFICATION_MINUTE = 59;
 
 /**
  * Parse watering interval from benchmark value
