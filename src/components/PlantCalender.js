@@ -45,7 +45,6 @@ export default function PlantCalendar({
 	// Calculate task dates for the current month
 	const taskDates = useMemo(() => {
 		const dates = {};
-		const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 		tasks.forEach((task) => {
 			// Skip completed tasks
@@ -55,79 +54,17 @@ export default function PlantCalendar({
 
 			if (task.nextDueDate) {
 				const dueDate = new Date(task.nextDueDate);
-
-				// If task has repeat interval, calculate all occurrences in this month
-				if (task.repeatInterval && task.repeatInterval.value) {
-					const intervalDays = task.repeatInterval.value;
-
-					// Start from the beginning of the current month
-					const monthStart = new Date(year, month, 1);
-					const monthEnd = new Date(year, month + 1, 0); // Last day of month
-
-					// Get task start date (when it was created)
-					const taskStartDate = task.startDate ? new Date(task.startDate) : new Date(task.createdAt || dueDate);
-
-					// Find the first occurrence in or before this month, but not before task start date
-					let currentTaskDate = new Date(dueDate);
-
-					// Move backwards to find a date before or at the start of this month
-					// but don't go before the task start date
-					while (currentTaskDate > monthStart && currentTaskDate > taskStartDate) {
-						const prevDate = new Date(
-							currentTaskDate.getTime() -
-								intervalDays * MS_PER_DAY,
-						);
-						// Stop if we'd go before task start date
-						if (prevDate < taskStartDate) {
-							break;
-						}
-						currentTaskDate = prevDate;
+				
+				// Show task if it's in the current month
+				if (
+					dueDate.getMonth() === month &&
+					dueDate.getFullYear() === year
+				) {
+					const day = dueDate.getDate();
+					if (!dates[day]) {
+						dates[day] = [];
 					}
-
-					// If currentTaskDate is before monthStart but after taskStartDate, 
-					// move forward to first occurrence in this month
-					if (currentTaskDate < monthStart) {
-						while (currentTaskDate < monthStart) {
-							currentTaskDate = new Date(
-								currentTaskDate.getTime() +
-									intervalDays * MS_PER_DAY,
-							);
-						}
-					}
-
-					// Now move forward and add all dates within this month
-					while (currentTaskDate <= monthEnd) {
-						if (
-							currentTaskDate >= monthStart &&
-							currentTaskDate <= monthEnd &&
-							currentTaskDate >= taskStartDate
-						) {
-							const day = currentTaskDate.getDate();
-							if (!dates[day]) {
-								dates[day] = [];
-							}
-							// Only add if not already present
-							if (!dates[day].find((t) => t.id === task.id)) {
-								dates[day].push(task);
-							}
-						}
-						currentTaskDate = new Date(
-							currentTaskDate.getTime() +
-								intervalDays * MS_PER_DAY,
-						);
-					}
-				} else {
-					// Single occurrence task
-					if (
-						dueDate.getMonth() === month &&
-						dueDate.getFullYear() === year
-					) {
-						const day = dueDate.getDate();
-						if (!dates[day]) {
-							dates[day] = [];
-						}
-						dates[day].push(task);
-					}
+					dates[day].push(task);
 				}
 			}
 		});

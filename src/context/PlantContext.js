@@ -98,37 +98,45 @@ export const PlantProvider = ({children}) => {
 			const newPlant = await storageService.addPlant(plantData);
 			setPlants((prev) => [...prev, newPlant]);
 
-			// Create default water task for the plant
+			// Create water tasks for the next 3 months
 			if (plantData.wateringGeneralBenchmark) {
 				const intervalDays = parseWateringInterval(
 					plantData.wateringGeneralBenchmark.value,
 				);
-				// Set nextDueDate to today at 18:00 for immediate task visibility
-				// If it's already past 18:00 today, schedule for today (will show as overdue)
-				const now = new Date();
 				const today = new Date();
 				today.setHours(18, 0, 0, 0);
+				const startDate = today.toISOString();
 				
-				const waterTask = {
-					plantId: newPlant.id,
-					type: 'Water',
-					title: `Water ${plantData.name}`,
-					repeatInterval: {
-						value: intervalDays,
-						unit: 'days',
-					},
-					nextDueDate: today.toISOString(),
-					startDate: today.toISOString(), // Track when task was created
-				};
-				const createdTask = await addTask(waterTask);
+				// Generate tasks for the next 3 months
+				const threeMonthsInDays = 90; // Approximately 3 months
+				const numberOfTasks = Math.ceil(threeMonthsInDays / intervalDays);
+				
+				for (let i = 0; i < numberOfTasks; i++) {
+					const dueDate = new Date(today);
+					dueDate.setDate(dueDate.getDate() + (i * intervalDays));
+					dueDate.setHours(18, 0, 0, 0);
+					
+					const waterTask = {
+						plantId: newPlant.id,
+						type: 'Water',
+						title: `Water ${plantData.name}`,
+						intervalDays: intervalDays,
+						nextDueDate: dueDate.toISOString(),
+						startDate: startDate,
+						completed: false,
+					};
+					const createdTask = await addTask(waterTask);
 
-				// Schedule notification with actual task ID
-				await notificationService.scheduleWateringNotification({
-					plantName: plantData.name,
-					plantImage: plantData.imageUri,
-					triggerDate: today,
-					taskId: createdTask.id,
-				});
+					// Schedule notification for the first task only
+					if (i === 0) {
+						await notificationService.scheduleWateringNotification({
+							plantName: plantData.name,
+							plantImage: plantData.imageUri,
+							triggerDate: dueDate,
+							taskId: createdTask.id,
+						});
+					}
+				}
 			}
 
 			return newPlant;
@@ -187,24 +195,52 @@ export const PlantProvider = ({children}) => {
 
 	const completeTask = async (taskId) => {
 		try {
-			await storageService.completeTask(taskId);
-			// Reload tasks to get updated data
-			const updatedTasks = await storageService.getTasks();
-			setTasks(updatedTasks);
+			// Get the task before marking it complete
+			const currentTasks = await storageService.getTasks();
+			const task = currentTasks.find((t) => t.id === taskId);
+			
+			if (!task) {
+				throw new Error('Task not found');
+			}
 
-			// Reschedule notification for the updated task
-			const task = updatedTasks.find((t) => t.id === taskId);
-			if (task && task.nextDueDate) {
+			// Mark task as completed
+			await storageService.updateTask(taskId, {
+				completed: true,
+				completedAt: new Date().toISOString(),
+			});
+
+			// Create a new task 3 months later
+			if (task.intervalDays) {
 				const plant = plants.find((p) => p.id === task.plantId);
 				if (plant) {
+					const threeMonthsLater = new Date();
+					threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+					threeMonthsLater.setHours(18, 0, 0, 0);
+
+					const newTask = {
+						plantId: task.plantId,
+						type: task.type,
+						title: task.title,
+						intervalDays: task.intervalDays,
+						nextDueDate: threeMonthsLater.toISOString(),
+						startDate: task.startDate || new Date().toISOString(),
+						completed: false,
+					};
+					const createdTask = await addTask(newTask);
+
+					// Schedule notification for the new task
 					await notificationService.scheduleWateringNotification({
 						plantName: plant.name,
 						plantImage: plant.imageUri,
-						triggerDate: new Date(task.nextDueDate),
-						taskId: task.id,
+						triggerDate: threeMonthsLater,
+						taskId: createdTask.id,
 					});
 				}
 			}
+
+			// Reload tasks to get updated data
+			const updatedTasks = await storageService.getTasks();
+			setTasks(updatedTasks);
 		} catch (error) {
 			console.error('Error completing task:', error);
 			throw error;
