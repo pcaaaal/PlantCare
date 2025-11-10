@@ -104,6 +104,8 @@ export const PlantProvider = ({children}) => {
 					plantData.wateringGeneralBenchmark.value,
 				);
 				// Set nextDueDate to today at 18:00 for immediate task visibility
+				// If it's already past 18:00 today, schedule for today (will show as overdue)
+				const now = new Date();
 				const today = new Date();
 				today.setHours(18, 0, 0, 0);
 				
