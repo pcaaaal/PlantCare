@@ -48,6 +48,11 @@ export default function PlantCalendar({
 		const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 		tasks.forEach((task) => {
+			// Skip completed tasks
+			if (task.completed) {
+				return;
+			}
+
 			if (task.nextDueDate) {
 				const dueDate = new Date(task.nextDueDate);
 
@@ -59,22 +64,43 @@ export default function PlantCalendar({
 					const monthStart = new Date(year, month, 1);
 					const monthEnd = new Date(year, month + 1, 0); // Last day of month
 
-					// Find the first occurrence in or before this month
+					// Get task start date (when it was created)
+					const taskStartDate = task.startDate ? new Date(task.startDate) : new Date(task.createdAt || dueDate);
+
+					// Find the first occurrence in or before this month, but not before task start date
 					let currentTaskDate = new Date(dueDate);
 
 					// Move backwards to find a date before or at the start of this month
-					while (currentTaskDate > monthStart) {
-						currentTaskDate = new Date(
+					// but don't go before the task start date
+					while (currentTaskDate > monthStart && currentTaskDate > taskStartDate) {
+						const prevDate = new Date(
 							currentTaskDate.getTime() -
 								intervalDays * MS_PER_DAY,
 						);
+						// Stop if we'd go before task start date
+						if (prevDate < taskStartDate) {
+							break;
+						}
+						currentTaskDate = prevDate;
+					}
+
+					// If currentTaskDate is before monthStart but after taskStartDate, 
+					// move forward to first occurrence in this month
+					if (currentTaskDate < monthStart) {
+						while (currentTaskDate < monthStart) {
+							currentTaskDate = new Date(
+								currentTaskDate.getTime() +
+									intervalDays * MS_PER_DAY,
+							);
+						}
 					}
 
 					// Now move forward and add all dates within this month
 					while (currentTaskDate <= monthEnd) {
 						if (
 							currentTaskDate >= monthStart &&
-							currentTaskDate <= monthEnd
+							currentTaskDate <= monthEnd &&
+							currentTaskDate >= taskStartDate
 						) {
 							const day = currentTaskDate.getDate();
 							if (!dates[day]) {

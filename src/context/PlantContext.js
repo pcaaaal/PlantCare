@@ -103,10 +103,10 @@ export const PlantProvider = ({children}) => {
 				const intervalDays = parseWateringInterval(
 					plantData.wateringGeneralBenchmark.value,
 				);
-				const nextDueDate = new Date(
-					Date.now() + intervalDays * 24 * 60 * 60 * 1000,
-				);
-
+				// Set nextDueDate to today at 18:00 for immediate task visibility
+				const today = new Date();
+				today.setHours(18, 0, 0, 0);
+				
 				const waterTask = {
 					plantId: newPlant.id,
 					type: 'Water',
@@ -115,7 +115,8 @@ export const PlantProvider = ({children}) => {
 						value: intervalDays,
 						unit: 'days',
 					},
-					nextDueDate: nextDueDate.toISOString(),
+					nextDueDate: today.toISOString(),
+					startDate: today.toISOString(), // Track when task was created
 				};
 				const createdTask = await addTask(waterTask);
 
@@ -123,7 +124,7 @@ export const PlantProvider = ({children}) => {
 				await notificationService.scheduleWateringNotification({
 					plantName: plantData.name,
 					plantImage: plantData.imageUri,
-					triggerDate: nextDueDate,
+					triggerDate: today,
 					taskId: createdTask.id,
 				});
 			}

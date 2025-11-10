@@ -69,6 +69,10 @@ export const notificationService = {
         return null;
       }
 
+      // Set notification time to 18:00 (6 PM)
+      const notificationDate = new Date(triggerDate);
+      notificationDate.setHours(18, 0, 0, 0);
+
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: '💧 Time to Water!',
@@ -78,7 +82,7 @@ export const notificationService = {
           priority: Notifications.AndroidNotificationPriority.HIGH,
         },
         trigger: {
-          date: triggerDate,
+          date: notificationDate,
         },
       });
 
@@ -96,11 +100,11 @@ export const notificationService = {
    * @param {string} params.plantName - Name of the plant
    * @param {number} params.intervalDays - Days between notifications
    * @param {number} params.taskId - Task ID for tracking
-   * @param {number} params.hour - Hour of day (0-23)
+   * @param {number} params.hour - Hour of day (0-23), defaults to 18 (6 PM)
    * @param {number} params.minute - Minute (0-59)
    * @returns {Promise<string>} Notification identifier
    */
-  async scheduleRepeatingNotification({ plantName, intervalDays, taskId, hour = 9, minute = 0 }) {
+  async scheduleRepeatingNotification({ plantName, intervalDays, taskId, hour = 18, minute = 0 }) {
     try {
       const hasPermission = await this.requestPermissions();
       if (!hasPermission) {
@@ -108,7 +112,7 @@ export const notificationService = {
         return null;
       }
 
-      // Calculate seconds until next trigger
+      // Calculate seconds until next trigger at 18:00
       const now = new Date();
       const trigger = new Date();
       trigger.setHours(hour, minute, 0, 0);
