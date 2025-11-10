@@ -73,11 +73,13 @@ export const notificationService = {
       const notificationDate = new Date(triggerDate);
       notificationDate.setHours(18, 0, 0, 0);
 
-      // Ensure notification is scheduled for the future
-      // If the date is in the past, don't schedule it
+      // Ensure notification is scheduled for the future with at least 1 minute buffer
+      // This prevents immediate notifications when adding plants or completing tasks
       const now = new Date();
-      if (notificationDate < now) {
-        console.log('Notification date is in the past, not scheduling:', notificationDate);
+      const oneMinuteFromNow = new Date(now.getTime() + 60000); // 60000ms = 1 minute
+      
+      if (notificationDate < oneMinuteFromNow) {
+        console.log('Notification date is too soon or in the past, not scheduling:', notificationDate);
         return null;
       }
 
