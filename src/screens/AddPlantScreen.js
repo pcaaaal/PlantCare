@@ -12,7 +12,6 @@ import {
 	Platform,
 	ActivityIndicator,
 } from 'react-native';
-import {CameraView, useCameraPermissions} from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import {Ionicons} from '@expo/vector-icons';
 import {usePlants} from '../context/PlantContext';
@@ -21,13 +20,10 @@ export default function AddPlantScreen({navigation}) {
 	const [plantName, setPlantName] = useState('');
 	const [description, setDescription] = useState('');
 	const [imageUri, setImageUri] = useState(null);
-	const [showCamera, setShowCamera] = useState(false);
-	const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 	const [searchResults, setSearchResults] = useState([]);
 	const [showSearchResults, setShowSearchResults] = useState(false);
 	const [selectedPlant, setSelectedPlant] = useState(null);
 	const [searchLoading, setSearchLoading] = useState(false);
-	const cameraRef = useRef(null);
 	const searchTimeout = useRef(null);
 	const {addPlant, searchPlantCatalog, getPlantDetails} = usePlants();
 
@@ -66,34 +62,28 @@ export default function AddPlantScreen({navigation}) {
 				clearTimeout(searchTimeout.current);
 			}
 		};
-	}, [plantName, selectedPlant]); // Add selectedPlant to dependencies
+	}, [plantName, selectedPlant]);
 
 	const handleTakePicture = async () => {
-		if (!cameraPermission?.granted) {
-			const {granted} = await requestCameraPermission();
-			if (!granted) {
-				Alert.alert(
-					'Permission Required',
-					'Camera permission is required to take photos',
-				);
-				return;
-			}
+		// Request camera permissions
+		const {status} = await ImagePicker.requestCameraPermissionsAsync();
+		if (status !== 'granted') {
+			Alert.alert(
+				'Permission Required',
+				'Camera permission is required to take photos',
+			);
+			return;
 		}
-		setShowCamera(true);
-	};
 
-	const handleCapture = async () => {
-		if (cameraRef.current) {
-			try {
-				const photo = await cameraRef.current.takePictureAsync({
-					quality: 0.7,
-				});
-				setImageUri(photo.uri);
-				setShowCamera(false);
-			} catch (error) {
-				console.error('Error taking picture:', error);
-				Alert.alert('Error', 'Failed to take picture');
-			}
+		// Launch native camera
+		const result = await ImagePicker.launchCameraAsync({
+			allowsEditing: true,
+			aspect: [4, 3],
+			quality: 0.7,
+		});
+
+		if (!result.canceled) {
+			setImageUri(result.assets[0].uri);
 		}
 	};
 
@@ -118,6 +108,28 @@ export default function AddPlantScreen({navigation}) {
 		if (!result.canceled) {
 			setImageUri(result.assets[0].uri);
 		}
+	};
+
+	const handleImageOptions = () => {
+		Alert.alert(
+			'Add Photo',
+			'Choose an option',
+			[
+				{
+					text: 'Take Photo',
+					onPress: handleTakePicture,
+				},
+				{
+					text: 'Choose from Library',
+					onPress: handlePickImage,
+				},
+				{
+					text: 'Cancel',
+					style: 'cancel',
+				},
+			],
+			{cancelable: true},
+		);
 	};
 
 	const handleSelectPlant = async (plant) => {
@@ -201,30 +213,6 @@ export default function AddPlantScreen({navigation}) {
 		}
 	};
 
-	if (showCamera) {
-		return (
-			<View style={styles.cameraContainer}>
-				<CameraView style={styles.camera} ref={cameraRef} facing="back">
-					<View style={styles.cameraControls}>
-						<TouchableOpacity
-							style={styles.cameraButton}
-							onPress={() => setShowCamera(false)}
-						>
-							<Text style={styles.cameraButtonText}>Close</Text>
-						</TouchableOpacity>
-						<TouchableOpacity
-							style={styles.captureButton}
-							onPress={handleCapture}
-						>
-							<View style={styles.captureButtonInner} />
-						</TouchableOpacity>
-						<View style={styles.cameraButton} />
-					</View>
-				</CameraView>
-			</View>
-		);
-	}
-
 	return (
 		<KeyboardAvoidingView
 			style={styles.container}
@@ -257,7 +245,7 @@ export default function AddPlantScreen({navigation}) {
 				{/* Image Card */}
 				<TouchableOpacity
 					style={styles.imageCard}
-					onPress={handleTakePicture}
+					onPress={handleImageOptions}
 				>
 					{imageUri ? (
 						<Image
@@ -513,6 +501,7 @@ const styles = StyleSheet.create({
 		resizeMode: 'cover',
 	},
 	imageCardPlaceholder: {
+		borderRadius: 16,
 		width: '100%',
 		height: '100%',
 		justifyContent: 'center',
@@ -627,42 +616,5 @@ const styles = StyleSheet.create({
 		color: '#666',
 		flex: 1,
 		lineHeight: 20,
-	},
-	cameraContainer: {
-		flex: 1,
-	},
-	camera: {
-		flex: 1,
-	},
-	cameraControls: {
-		flex: 1,
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'flex-end',
-		paddingBottom: 40,
-		paddingHorizontal: 30,
-	},
-	cameraButton: {
-		width: 80,
-		padding: 15,
-	},
-	cameraButtonText: {
-		fontSize: 18,
-		color: '#FFFFFF',
-		fontWeight: 'bold',
-	},
-	captureButton: {
-		width: 80,
-		height: 80,
-		borderRadius: 40,
-		backgroundColor: '#FFFFFF',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	captureButtonInner: {
-		width: 65,
-		height: 65,
-		borderRadius: 32.5,
-		backgroundColor: '#4CAF50',
 	},
 });
