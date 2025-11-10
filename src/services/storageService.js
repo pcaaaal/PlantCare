@@ -197,6 +197,13 @@ export const storageService = {
         await this.updateTask(taskId, {
           lastCompletedAt: now.toISOString(),
           nextDueDate: nextDueDate.toISOString(),
+          completed: false, // Repeating tasks are never permanently completed
+        });
+      } else {
+        // Non-repeating task - mark as completed
+        await this.updateTask(taskId, {
+          completed: true,
+          completedAt: new Date().toISOString(),
         });
       }
     } catch (error) {

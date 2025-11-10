@@ -161,7 +161,7 @@ export const PlantProvider = ({ children }) => {
   };
 
   const getTasksForPlant = (plantId) => {
-    return tasks.filter(t => t.plantId === plantId);
+    return tasks.filter(t => t.plantId === plantId && !t.completed);
   };
 
   const getUpcomingTasks = () => {
@@ -170,7 +170,7 @@ export const PlantProvider = ({ children }) => {
     
     return tasks
       .filter(t => {
-        if (!t.nextDueDate) return false;
+        if (!t.nextDueDate || t.completed) return false;
         const dueDate = new Date(t.nextDueDate);
         return dueDate <= threeDaysFromNow;
       })
