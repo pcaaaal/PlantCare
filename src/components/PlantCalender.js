@@ -242,17 +242,13 @@ export default function PlantCalendar({
 											{dateStr}
 										</Text>
 										{taskDates[day].map((task, index) => (
-											<TouchableOpacity
+											<View
 												key={task.id}
 												style={[
 													styles.taskRow,
 													index > 0 &&
 														styles.taskRowSpacing,
 												]}
-												onPress={() =>
-													onTaskPress &&
-													onTaskPress(task.id)
-												}
 											>
 												<Text style={styles.taskIcon}>
 													{getTaskIcon(task.type)}
@@ -266,7 +262,18 @@ export default function PlantCalendar({
 														{task.type}
 													</Text>
 												</View>
-											</TouchableOpacity>
+												<TouchableOpacity
+													style={styles.completeButton}
+													onPress={() =>
+														onTaskPress &&
+														onTaskPress(task.id)
+													}
+												>
+													<Text style={styles.completeButtonText}>
+														✓
+													</Text>
+												</TouchableOpacity>
+											</View>
 										))}
 									</View>
 								);
@@ -415,6 +422,20 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: '600',
 		color: '#333',
+	},
+	completeButton: {
+		width: 36,
+		height: 36,
+		borderRadius: 18,
+		backgroundColor: '#4CAF50',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginLeft: 8,
+	},
+	completeButtonText: {
+		fontSize: 20,
+		color: '#FFFFFF',
+		fontWeight: 'bold',
 	},
 	noTasksText: {
 		fontSize: 14,

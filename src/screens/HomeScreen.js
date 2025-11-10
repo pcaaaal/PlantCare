@@ -14,7 +14,7 @@ const {width} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.6;
 
 export default function HomeScreen({navigation}) {
-	const {plants, getUpcomingTasks, loading} = usePlants();
+	const {plants, getUpcomingTasks, completeTask, loading} = usePlants();
 
 	const upcomingTasks = getUpcomingTasks();
 
@@ -126,19 +126,21 @@ export default function HomeScreen({navigation}) {
 									(p) => p.id === task.plantId,
 								);
 								return (
-									<TouchableOpacity
+									<View
 										key={task.id}
 										style={styles.taskItem}
-										onPress={() =>
-											navigation.navigate('PlantDetail', {
-												plantId: task.plantId,
-											})
-										}
 									>
 										<Text style={styles.taskIcon}>
 											{getTaskIcon(task.type)}
 										</Text>
-										<View style={styles.taskContent}>
+										<TouchableOpacity
+											style={styles.taskContent}
+											onPress={() =>
+												navigation.navigate('PlantDetail', {
+													plantId: task.plantId,
+												})
+											}
+										>
 											<Text style={styles.taskTitle}>
 												{task.title}
 											</Text>
@@ -147,7 +149,7 @@ export default function HomeScreen({navigation}) {
 													{plant.name}
 												</Text>
 											)}
-										</View>
+										</TouchableOpacity>
 										<Text
 											style={[
 												styles.taskDays,
@@ -163,7 +165,17 @@ export default function HomeScreen({navigation}) {
 												? 'Overdue'
 												: `${daysUntil}d`}
 										</Text>
-									</TouchableOpacity>
+										<TouchableOpacity
+											style={styles.completeButton}
+											onPress={async () => {
+												await completeTask(task.id);
+											}}
+										>
+											<Text style={styles.completeButtonText}>
+												✓
+											</Text>
+										</TouchableOpacity>
+									</View>
 								);
 							})
 						) : (
@@ -323,6 +335,20 @@ const styles = StyleSheet.create({
 	},
 	taskDaysOverdue: {
 		color: '#F44336',
+	},
+	completeButton: {
+		width: 36,
+		height: 36,
+		borderRadius: 18,
+		backgroundColor: '#4CAF50',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginLeft: 8,
+	},
+	completeButtonText: {
+		fontSize: 20,
+		color: '#FFFFFF',
+		fontWeight: 'bold',
 	},
 	noTasks: {
 		textAlign: 'center',

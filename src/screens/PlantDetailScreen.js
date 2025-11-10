@@ -13,7 +13,7 @@ import PlantCalendar from '../components/PlantCalender';
 
 export default function PlantDetailScreen({ route, navigation }) {
   const { plantId } = route.params;
-  const { plants, getTasksForPlant, completeTask, deletePlant } = usePlants();
+  const { plants, tasks: allTasks, getTasksForPlant, completeTask, deletePlant } = usePlants();
   const [plant, setPlant] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -25,15 +25,12 @@ export default function PlantDetailScreen({ route, navigation }) {
       const plantTasks = getTasksForPlant(plantId);
       setTasks(plantTasks);
     }
-  }, [plantId, plants]);
+  }, [plantId, plants, allTasks]);
 
   const handleCompleteTask = async (taskId) => {
     try {
       await completeTask(taskId);
       Alert.alert('Success', 'Task completed!');
-      // Refresh tasks
-      const plantTasks = getTasksForPlant(plantId);
-      setTasks(plantTasks);
     } catch (error) {
       Alert.alert('Error', 'Failed to complete task');
     }

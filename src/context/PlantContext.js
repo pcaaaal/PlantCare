@@ -208,24 +208,22 @@ export const PlantProvider = ({children}) => {
 		}
 	};
 
-	const getTasksForPlant = (plantId) => {
-		return tasks.filter((t) => t.plantId === plantId);
-	};
+  const getTasksForPlant = (plantId) => {
+    return tasks.filter(t => t.plantId === plantId && !t.completed);
+  };
 
-	const getUpcomingTasks = () => {
-		const now = new Date();
-		const threeDaysFromNow = new Date(
-			now.getTime() + 3 * 24 * 60 * 60 * 1000,
-		);
-
-		return tasks
-			.filter((t) => {
-				if (!t.nextDueDate) return false;
-				const dueDate = new Date(t.nextDueDate);
-				return dueDate <= threeDaysFromNow;
-			})
-			.sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
-	};
+  const getUpcomingTasks = () => {
+    const now = new Date();
+    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    
+    return tasks
+      .filter(t => {
+        if (!t.nextDueDate || t.completed) return false;
+        const dueDate = new Date(t.nextDueDate);
+        return dueDate <= threeDaysFromNow;
+      })
+      .sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
+  };
 
 	const value = {
 		plants,

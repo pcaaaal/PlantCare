@@ -42,7 +42,7 @@ export default function AddPlantScreen({navigation}) {
 		if (searchTimeout.current) {
 			clearTimeout(searchTimeout.current);
 		}
-		if (plantName && plantName.length >= 3) {
+		if (plantName && plantName.length >= 2) {
 			setSearchLoading(true);
 			searchTimeout.current = setTimeout(async () => {
 				try {

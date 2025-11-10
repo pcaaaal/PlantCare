@@ -185,32 +185,37 @@ export const storageService = {
 		}
 	},
 
-	/**
-	 * Complete a task and schedule next occurrence
-	 * @param {number} taskId - Task ID
-	 */
-	async completeTask(taskId) {
-		try {
-			const tasks = await this.getTasks();
-			const task = tasks.find((t) => t.id === taskId);
-
-			if (task && task.repeatInterval) {
-				const now = new Date();
-				const nextDueDate = new Date(now);
-				nextDueDate.setDate(
-					nextDueDate.getDate() + task.repeatInterval.value,
-				);
-
-				await this.updateTask(taskId, {
-					lastCompletedAt: now.toISOString(),
-					nextDueDate: nextDueDate.toISOString(),
-				});
-			}
-		} catch (error) {
-			console.error('Error completing task:', error);
-			throw error;
-		}
-	},
+  /**
+   * Complete a task and schedule next occurrence
+   * @param {number} taskId - Task ID
+   */
+  async completeTask(taskId) {
+    try {
+      const tasks = await this.getTasks();
+      const task = tasks.find(t => t.id === taskId);
+      
+      if (task && task.repeatInterval) {
+        const now = new Date();
+        const nextDueDate = new Date(now);
+        nextDueDate.setDate(nextDueDate.getDate() + task.repeatInterval.value);
+        
+        await this.updateTask(taskId, {
+          lastCompletedAt: now.toISOString(),
+          nextDueDate: nextDueDate.toISOString(),
+          completed: false, // Repeating tasks are never permanently completed
+        });
+      } else {
+        // Non-repeating task - mark as completed
+        await this.updateTask(taskId, {
+          completed: true,
+          completedAt: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error('Error completing task:', error);
+      throw error;
+    }
+  },
 
 	/**
 	 * Get tasks for a specific plant
