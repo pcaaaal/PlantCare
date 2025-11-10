@@ -1,0 +1,81 @@
+// Load environment variables from .env file
+import 'dotenv/config';
+
+export default {
+	expo: {
+		name: 'PlantCare',
+		slug: 'plantcare',
+		version: '1.0.0',
+		orientation: 'portrait',
+		icon: './assets/images/icon.png',
+		userInterfaceStyle: 'light',
+		splash: {
+			image: './assets/splash/splash-icon-light.png',
+			resizeMode: 'contain',
+			backgroundColor: '#ffffff',
+		},
+		extra: {
+			perenualApiKey: process.env.EXPO_PUBLIC_PERENUAL_API_KEY,
+			perenualApiUrl: process.env.EXPO_PUBLIC_PERENUAL_API_URL,
+		},
+		assetBundlePatterns: ['**/*'],
+		ios: {
+			supportsTablet: true,
+			bundleIdentifier: 'com.kenji839.plantcare',
+			infoPlist: {
+				NSCameraUsageDescription:
+					'This app requires camera access to take photos of your plants.',
+				NSPhotoLibraryUsageDescription:
+					'This app requires photo library access to select photos of your plants.',
+				NSUserNotificationsUsageDescription:
+					'This app sends notifications to remind you to water your plants.',
+			},
+			icon: {
+				dark: './assets/icon/ios-dark.png',
+				light: './assets/icon/ios-light.png',
+				tinted: './assets/icon/ios-tinted.png',
+			},
+		},
+		android: {
+			adaptiveIcon: {
+				foregroundImage: './assets/icons/adaptive-icon.png',
+				monochromeImage: './assets/icons/adaptive-icon.png',
+				backgroundColor: '#ffffff',
+			},
+			package: 'com.kenji839.plantcare',
+			permissions: [
+				'CAMERA',
+				'READ_EXTERNAL_STORAGE',
+				'WRITE_EXTERNAL_STORAGE',
+				'RECEIVE_BOOT_COMPLETED',
+				'VIBRATE',
+			],
+		},
+		web: {
+			favicon: './assets/favicon.png',
+		},
+		plugins: [
+			[
+				'expo-camera',
+				{
+					cameraPermission:
+						'Allow PlantCare to access your camera to take photos of your plants.',
+				},
+			],
+			[
+				'expo-image-picker',
+				{
+					photosPermission:
+						'Allow PlantCare to access your photos to select plant images.',
+				},
+			],
+			[
+				'expo-notifications',
+				{
+					icon: './assets/icon.png',
+					color: '#4CAF50',
+				},
+			],
+		],
+	},
+};

@@ -10,12 +10,12 @@ import {
 	Image,
 	KeyboardAvoidingView,
 	Platform,
+	ActivityIndicator,
 } from 'react-native';
 import {CameraView, useCameraPermissions} from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import {Ionicons} from '@expo/vector-icons';
 import {usePlants} from '../context/PlantContext';
-import {searchPlants} from '../data/plantData';
 
 export default function AddPlantScreen({navigation}) {
 	const [plantName, setPlantName] = useState('');
@@ -26,19 +26,47 @@ export default function AddPlantScreen({navigation}) {
 	const [searchResults, setSearchResults] = useState([]);
 	const [showSearchResults, setShowSearchResults] = useState(false);
 	const [selectedPlant, setSelectedPlant] = useState(null);
+	const [searchLoading, setSearchLoading] = useState(false);
 	const cameraRef = useRef(null);
-	const {addPlant} = usePlants();
+	const searchTimeout = useRef(null);
+	const {addPlant, searchPlantCatalog, getPlantDetails} = usePlants();
 
 	useEffect(() => {
-		if (plantName) {
-			const results = searchPlants(plantName);
-			setSearchResults(results);
-			setShowSearchResults(true);
+		// Don't search if a plant is already selected
+		if (selectedPlant) {
+			setShowSearchResults(false);
+			return;
+		}
+
+		// Debounce search to avoid too many API calls
+		if (searchTimeout.current) {
+			clearTimeout(searchTimeout.current);
+		}
+		if (plantName && plantName.length >= 2) {
+			setSearchLoading(true);
+			searchTimeout.current = setTimeout(async () => {
+				try {
+					const results = await searchPlantCatalog(plantName);
+					setSearchResults(results);
+					setShowSearchResults(true);
+				} catch (error) {
+					console.error('Search error:', error);
+					setSearchResults([]);
+				} finally {
+					setSearchLoading(false);
+				}
+			}, 500);
 		} else {
 			setSearchResults([]);
 			setShowSearchResults(false);
+			setSearchLoading(false);
 		}
-	}, [plantName]);
+		return () => {
+			if (searchTimeout.current) {
+				clearTimeout(searchTimeout.current);
+			}
+		};
+	}, [plantName, selectedPlant]); // Add selectedPlant to dependencies
 
 	const handleTakePicture = async () => {
 		if (!cameraPermission?.granted) {
@@ -92,11 +120,31 @@ export default function AddPlantScreen({navigation}) {
 		}
 	};
 
-	const handleSelectPlant = (plant) => {
-		setPlantName(plant.name);
-		setSelectedPlant(plant);
-		setDescription(plant.description || '');
+	const handleSelectPlant = async (plant) => {
+		// Set a placeholder immediately to prevent useEffect from searching
+		setSelectedPlant({
+			name: plant.name,
+			scientificName: plant.scientificName,
+		});
+
+		// Clear search state immediately
 		setShowSearchResults(false);
+		setSearchLoading(false);
+		if (searchTimeout.current) {
+			clearTimeout(searchTimeout.current);
+		}
+
+		// Update plant name
+		setPlantName(plant.name);
+
+		try {
+			// Fetch detailed plant information
+			const details = await getPlantDetails(plant.id);
+			setSelectedPlant(details);
+		} catch (error) {
+			console.error('Error fetching plant details:', error);
+			// selectedPlant already has basic info from above
+		}
 	};
 
 	const handleAddPlant = async () => {
@@ -111,12 +159,13 @@ export default function AddPlantScreen({navigation}) {
 			const plantData = selectedPlant
 				? {
 						name: plantName,
-						scientificName: selectedPlant.scientificName,
+						scientificName: selectedPlant.scientificName || [],
 						watering: selectedPlant.watering,
 						wateringGeneralBenchmark:
 							selectedPlant.wateringGeneralBenchmark,
-						sunlight: selectedPlant.sunlight,
-						description: description || selectedPlant.description,
+						sunlight: selectedPlant.sunlight || [],
+						description:
+							description || selectedPlant.description || '',
 						imageUri: imageUri,
 				  }
 				: {
@@ -124,6 +173,8 @@ export default function AddPlantScreen({navigation}) {
 						description: description,
 						imageUri: imageUri,
 						wateringGeneralBenchmark: {value: '7', unit: 'days'},
+						scientificName: [],
+						sunlight: [],
 				  };
 
 			await addPlant(plantData);
@@ -159,7 +210,7 @@ export default function AddPlantScreen({navigation}) {
 							style={styles.cameraButton}
 							onPress={() => setShowCamera(false)}
 						>
-							<Text style={styles.cameraButtonText}>Cancel</Text>
+							<Text style={styles.cameraButtonText}>Close</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={styles.captureButton}
@@ -233,16 +284,32 @@ export default function AddPlantScreen({navigation}) {
 							<TextInput
 								style={styles.input}
 								value={plantName}
-								onChangeText={setPlantName}
+								onChangeText={(text) => {
+									setPlantName(text);
+									// Clear selected plant when user types
+									if (
+										selectedPlant &&
+										text !== selectedPlant.name
+									) {
+										setSelectedPlant(null);
+									}
+								}}
 								placeholder="e.g., Rose, Monstera"
 								placeholderTextColor="#999"
 							/>
 							<View style={styles.searchIcon}>
-								<Ionicons
-									name="search"
-									size={20}
-									color="#999"
-								/>
+								{searchLoading ? (
+									<ActivityIndicator
+										size="small"
+										color="#4CAF50"
+									/>
+								) : (
+									<Ionicons
+										name="search"
+										size={20}
+										color="#999"
+									/>
+								)}
 							</View>
 						</View>
 
@@ -251,26 +318,39 @@ export default function AddPlantScreen({navigation}) {
 							<View style={styles.searchResults}>
 								{searchResults.slice(0, 5).map((plant) => (
 									<TouchableOpacity
-										key={plant.name}
+										key={plant.id}
 										style={styles.searchResultItem}
 										onPress={() => handleSelectPlant(plant)}
 									>
 										<Text style={styles.searchResultText}>
 											{plant.name}
 										</Text>
-										{plant.scientificName && (
-											<Text
-												style={
-													styles.searchResultScientific
-												}
-											>
-												{plant.scientificName[0]}
-											</Text>
-										)}
+										{plant.scientificName &&
+											plant.scientificName.length > 0 && (
+												<Text
+													style={
+														styles.searchResultScientific
+													}
+												>
+													{plant.scientificName[0]}
+												</Text>
+											)}
 									</TouchableOpacity>
 								))}
 							</View>
 						)}
+
+						{showSearchResults &&
+							searchResults.length === 0 &&
+							!searchLoading &&
+							plantName.length >= 2 && (
+								<View style={styles.noResults}>
+									<Text style={styles.noResultsText}>
+										No plants found. You can still add "
+										{plantName}" manually.
+									</Text>
+								</View>
+							)}
 					</View>
 
 					<View style={styles.inputGroup}>
@@ -299,20 +379,21 @@ export default function AddPlantScreen({navigation}) {
 								</Text>
 							</View>
 
-							{selectedPlant.scientificName && (
-								<View style={styles.plantInfoRow}>
-									<Ionicons
-										name="flask-outline"
-										size={16}
-										color="#666"
-									/>
-									<Text style={styles.plantInfoText}>
-										{selectedPlant.scientificName.join(
-											', ',
-										)}
-									</Text>
-								</View>
-							)}
+							{selectedPlant.scientificName &&
+								selectedPlant.scientificName.length > 0 && (
+									<View style={styles.plantInfoRow}>
+										<Ionicons
+											name="flask-outline"
+											size={16}
+											color="#666"
+										/>
+										<Text style={styles.plantInfoText}>
+											{selectedPlant.scientificName.join(
+												', ',
+											)}
+										</Text>
+									</View>
+								)}
 
 							{selectedPlant.watering && (
 								<View style={styles.plantInfoRow}>
@@ -348,18 +429,19 @@ export default function AddPlantScreen({navigation}) {
 								</View>
 							)}
 
-							{selectedPlant.sunlight && (
-								<View style={styles.plantInfoRow}>
-									<Ionicons
-										name="sunny-outline"
-										size={16}
-										color="#666"
-									/>
-									<Text style={styles.plantInfoText}>
-										{selectedPlant.sunlight.join(', ')}
-									</Text>
-								</View>
-							)}
+							{selectedPlant.sunlight &&
+								selectedPlant.sunlight.length > 0 && (
+									<View style={styles.plantInfoRow}>
+										<Ionicons
+											name="sunny-outline"
+											size={16}
+											color="#666"
+										/>
+										<Text style={styles.plantInfoText}>
+											{selectedPlant.sunlight.join(', ')}
+										</Text>
+									</View>
+								)}
 						</View>
 					)}
 				</View>
@@ -506,6 +588,17 @@ const styles = StyleSheet.create({
 		color: '#999',
 		marginTop: 2,
 		fontStyle: 'italic',
+	},
+	noResults: {
+		backgroundColor: '#FFF9E6',
+		padding: 12,
+		borderRadius: 8,
+		marginTop: 8,
+	},
+	noResultsText: {
+		fontSize: 14,
+		color: '#666',
+		textAlign: 'center',
 	},
 	plantInfo: {
 		backgroundColor: '#F0F7F0',
