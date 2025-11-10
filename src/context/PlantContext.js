@@ -5,10 +5,6 @@ import {plantApiService} from '../services/plantApiService';
 
 const PlantContext = createContext();
 
-// Notification time configuration
-const NOTIFICATION_HOUR = 14;
-const NOTIFICATION_MINUTE = 55;
-
 /**
  * Parse watering interval from benchmark value
  * @param {string} value - Value like "7-10" or "7"
@@ -109,9 +105,9 @@ export const PlantProvider = ({children}) => {
 				);
 				const now = new Date();
 				const nextNotificationTime = new Date();
-				nextNotificationTime.setHours(NOTIFICATION_HOUR, NOTIFICATION_MINUTE, 0, 0);
+				nextNotificationTime.setHours(14, 47, 0, 0);
 				
-				// If it's close to or past the notification time (within 1 minute), start from tomorrow
+				// If it's close to or past 14:47 (within 1 minute), start from tomorrow
 				// This ensures notifications are always scheduled for the future with a buffer
 				const oneMinuteFromNow = new Date(now.getTime() + 60000);
 				if (nextNotificationTime < oneMinuteFromNow) {
@@ -127,7 +123,7 @@ export const PlantProvider = ({children}) => {
 				for (let i = 0; i < numberOfTasks; i++) {
 					const dueDate = new Date(nextNotificationTime);
 					dueDate.setDate(dueDate.getDate() + (i * intervalDays));
-					dueDate.setHours(NOTIFICATION_HOUR, NOTIFICATION_MINUTE, 0, 0);
+					dueDate.setHours(14, 47, 0, 0);
 					
 					const waterTask = {
 						plantId: newPlant.id,
@@ -141,7 +137,7 @@ export const PlantProvider = ({children}) => {
 					await addTask(waterTask);
 
 					// Don't schedule notifications when adding plants
-					// Notifications should only be sent at the configured time for tasks due that day
+					// Notifications should only be sent at 14:47 for tasks due that day
 				}
 			}
 
@@ -245,7 +241,7 @@ export const PlantProvider = ({children}) => {
 						nextDueDate = new Date(task.nextDueDate);
 						nextDueDate.setDate(nextDueDate.getDate() + task.intervalDays);
 					}
-					nextDueDate.setHours(NOTIFICATION_HOUR, NOTIFICATION_MINUTE, 0, 0);
+					nextDueDate.setHours(14, 47, 0, 0);
 
 					const newTask = {
 						plantId: task.plantId,
@@ -259,7 +255,7 @@ export const PlantProvider = ({children}) => {
 					await addTask(newTask);
 
 					// Don't schedule notifications when completing tasks
-					// Notifications should only be sent at the configured time for tasks due that day
+					// Notifications should only be sent at 14:47 for tasks due that day
 				}
 			}
 
