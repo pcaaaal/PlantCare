@@ -115,7 +115,7 @@ export default function HomeScreen({navigation}) {
 
 				{/* Tasks Section */}
 				<View style={styles.tasksSection}>
-					<Text style={styles.tasksHeader}>Tasks</Text>
+					<Text style={styles.tasksHeader}>Tasks Today</Text>
 					<View style={styles.tasksList}>
 						{upcomingTasks.length > 0 ? (
 							upcomingTasks.map((task) => {
