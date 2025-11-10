@@ -209,11 +209,13 @@ export const PlantProvider = ({children}) => {
 				completedAt: new Date().toISOString(),
 			});
 
-			// Create a new task 3 months later
+			// Create a new task 3 months later from the task's due date
 			if (task.intervalDays) {
 				const plant = plants.find((p) => p.id === task.plantId);
 				if (plant) {
-					const threeMonthsLater = new Date();
+					// Calculate 3 months from the task's original due date
+					const taskDueDate = new Date(task.nextDueDate);
+					const threeMonthsLater = new Date(taskDueDate);
 					threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
 					threeMonthsLater.setHours(18, 0, 0, 0);
 
