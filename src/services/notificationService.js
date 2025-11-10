@@ -15,6 +15,10 @@ Notifications.setNotificationHandler({
 /**
  * Notification service for managing plant care reminders
  */
+// Notification time configuration
+const NOTIFICATION_HOUR = 15;
+const NOTIFICATION_MINUTE = 15;
+
 // Track if notification channel has been set up (Android only)
 let channelConfigured = false;
 
@@ -74,9 +78,9 @@ export const notificationService = {
         return null;
       }
 
-      // Set notification time to 18:00 (6 PM)
+      // Set notification time to configured hour and minute
       const notificationDate = new Date(triggerDate);
-      notificationDate.setHours(18, 0, 0, 0);
+      notificationDate.setHours(NOTIFICATION_HOUR, NOTIFICATION_MINUTE, 0, 0);
 
       // Ensure notification is scheduled for the future with at least 1 minute buffer
       // This prevents immediate notifications when adding plants or completing tasks
@@ -110,48 +114,16 @@ export const notificationService = {
   },
 
   /**
-   * Schedule a notification for watering reminder without checking permissions
-   * Used when permissions have already been checked (e.g., in batch scheduling)
-   * @param {Object} params - Notification parameters
-   * @param {string} params.plantName - Name of the plant
-   * @param {string} params.plantImage - URI of plant image (optional)
-   * @param {Date} params.triggerDate - When to trigger the notification (already set to 18:00)
-   * @param {number} params.taskId - Task ID for tracking
-   * @returns {Promise<string>} Notification identifier
-   */
-  async scheduleWateringNotificationWithoutPermissionCheck({ plantName, plantImage, triggerDate, taskId }) {
-    try {
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: '💧 Time to Water!',
-          body: `Your ${plantName} needs watering today.`,
-          data: { taskId, plantName },
-          sound: true,
-          priority: Notifications.AndroidNotificationPriority.HIGH,
-        },
-        trigger: {
-          date: triggerDate,
-        },
-      });
-
-      return notificationId;
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
-      return null;
-    }
-  },
-
-  /**
    * Schedule repeating notification for a task
    * @param {Object} params - Notification parameters
    * @param {string} params.plantName - Name of the plant
    * @param {number} params.intervalDays - Days between notifications
    * @param {number} params.taskId - Task ID for tracking
-   * @param {number} params.hour - Hour of day (0-23), defaults to 18 (6 PM)
-   * @param {number} params.minute - Minute (0-59)
+   * @param {number} params.hour - Hour of day (0-23), defaults to configured hour
+   * @param {number} params.minute - Minute (0-59), defaults to configured minute
    * @returns {Promise<string>} Notification identifier
    */
-  async scheduleRepeatingNotification({ plantName, intervalDays, taskId, hour = 18, minute = 0 }) {
+  async scheduleRepeatingNotification({ plantName, intervalDays, taskId, hour = NOTIFICATION_HOUR, minute = NOTIFICATION_MINUTE }) {
     try {
       const hasPermission = await this.requestPermissions();
       if (!hasPermission) {
@@ -159,7 +131,7 @@ export const notificationService = {
         return null;
       }
 
-      // Calculate seconds until next trigger at 18:00
+      // Calculate seconds until next trigger at configured time
       const now = new Date();
       const trigger = new Date();
       trigger.setHours(hour, minute, 0, 0);

@@ -59,21 +59,10 @@ export const PlantProvider = ({children}) => {
 
 	const scheduleTaskNotifications = async (plantsData, tasksData) => {
 		try {
-			// Request permissions once at the start
-			const hasPermission = await notificationService.requestPermissions();
-			if (!hasPermission) {
-				console.warn('Cannot schedule notifications without permission');
-				return;
-			}
-
 			// Cancel all existing scheduled notifications first
 			await notificationService.cancelAllNotifications();
 			
 			// Schedule notifications for all incomplete tasks
-			// Only schedule notifications for tasks due in the future
-			const now = new Date();
-			const oneMinuteFromNow = new Date(now.getTime() + 60000);
-			
 			for (const task of tasksData) {
 				if (task.completed || !task.nextDueDate) continue;
 				
@@ -81,12 +70,11 @@ export const PlantProvider = ({children}) => {
 				if (!plant) continue;
 				
 				const dueDate = new Date(task.nextDueDate);
-				dueDate.setHours(18, 0, 0, 0);
+				const now = new Date();
 				
-				// Only schedule if due date is more than 1 minute in the future
-				if (dueDate > oneMinuteFromNow) {
-					// Schedule without requesting permissions again (already done above)
-					await notificationService.scheduleWateringNotificationWithoutPermissionCheck({
+				// Only schedule if due date is in the future
+				if (dueDate > now) {
+					await notificationService.scheduleWateringNotification({
 						plantName: plant.name,
 						plantImage: plant.imageUri,
 						triggerDate: dueDate,
