@@ -47,10 +47,43 @@ export const PlantProvider = ({children}) => {
 			]);
 			setPlants(loadedPlants);
 			setTasks(loadedTasks);
+			
+			// Schedule notifications for incomplete tasks
+			await scheduleTaskNotifications(loadedPlants, loadedTasks);
 		} catch (error) {
 			console.error('Error loading data:', error);
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const scheduleTaskNotifications = async (plantsData, tasksData) => {
+		try {
+			// Cancel all existing scheduled notifications first
+			await notificationService.cancelAllNotifications();
+			
+			// Schedule notifications for all incomplete tasks
+			for (const task of tasksData) {
+				if (task.completed || !task.nextDueDate) continue;
+				
+				const plant = plantsData.find(p => p.id === task.plantId);
+				if (!plant) continue;
+				
+				const dueDate = new Date(task.nextDueDate);
+				const now = new Date();
+				
+				// Only schedule if due date is in the future
+				if (dueDate > now) {
+					await notificationService.scheduleWateringNotification({
+						plantName: plant.name,
+						plantImage: plant.imageUri,
+						triggerDate: dueDate,
+						taskId: task.id,
+					});
+				}
+			}
+		} catch (error) {
+			console.error('Error scheduling task notifications:', error);
 		}
 	};
 
@@ -140,6 +173,11 @@ export const PlantProvider = ({children}) => {
 					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
+
+			// Reschedule all task notifications
+			const updatedPlants = [...plants, newPlant];
+			const updatedTasks = await storageService.getTasks();
+			await scheduleTaskNotifications(updatedPlants, updatedTasks);
 
 			return newPlant;
 		} catch (error) {
@@ -262,6 +300,9 @@ export const PlantProvider = ({children}) => {
 			// Reload tasks to get updated data
 			const updatedTasks = await storageService.getTasks();
 			setTasks(updatedTasks);
+			
+			// Reschedule all task notifications
+			await scheduleTaskNotifications(plants, updatedTasks);
 		} catch (error) {
 			console.error('Error completing task:', error);
 			throw error;
@@ -285,6 +326,20 @@ export const PlantProvider = ({children}) => {
       .sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
   };
 
+  const getTodaysTasks = () => {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    
+    return tasks
+      .filter(t => {
+        if (!t.nextDueDate || t.completed) return false;
+        const dueDate = new Date(t.nextDueDate);
+        return dueDate >= startOfToday && dueDate <= endOfToday;
+      })
+      .sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
+  };
+
 	const value = {
 		plants,
 		tasks,
@@ -297,6 +352,7 @@ export const PlantProvider = ({children}) => {
 		completeTask,
 		getTasksForPlant,
 		getUpcomingTasks,
+		getTodaysTasks,
 		refreshData: loadData,
 		searchPlantCatalog,
 		getPlantDetails,
