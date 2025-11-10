@@ -134,17 +134,10 @@ export const PlantProvider = ({children}) => {
 						startDate: startDate,
 						completed: false,
 					};
-					const createdTask = await addTask(waterTask);
+					await addTask(waterTask);
 
-					// Schedule notification for the first task only
-					if (i === 0) {
-						await notificationService.scheduleWateringNotification({
-							plantName: plantData.name,
-							plantImage: plantData.imageUri,
-							triggerDate: dueDate,
-							taskId: createdTask.id,
-						});
-					}
+					// Don't schedule notifications when adding plants
+					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
 
@@ -259,15 +252,10 @@ export const PlantProvider = ({children}) => {
 						startDate: task.startDate || new Date().toISOString(),
 						completed: false,
 					};
-					const createdTask = await addTask(newTask);
+					await addTask(newTask);
 
-					// Schedule notification for the new task
-					await notificationService.scheduleWateringNotification({
-						plantName: plant.name,
-						plantImage: plant.imageUri,
-						triggerDate: nextDueDate,
-						taskId: createdTask.id,
-					});
+					// Don't schedule notifications when completing tasks
+					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
 
