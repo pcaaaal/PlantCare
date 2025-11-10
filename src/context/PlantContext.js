@@ -105,9 +105,9 @@ export const PlantProvider = ({children}) => {
 				);
 				const now = new Date();
 				const nextNotificationTime = new Date();
-				nextNotificationTime.setHours(14, 45, 0, 0);
+				nextNotificationTime.setHours(18, 0, 0, 0);
 				
-				// If it's close to or past 14:45 (within 1 minute), start from tomorrow
+				// If it's close to or past 18:00 (within 1 minute), start from tomorrow
 				// This ensures notifications are always scheduled for the future with a buffer
 				const oneMinuteFromNow = new Date(now.getTime() + 60000);
 				if (nextNotificationTime < oneMinuteFromNow) {
@@ -123,7 +123,7 @@ export const PlantProvider = ({children}) => {
 				for (let i = 0; i < numberOfTasks; i++) {
 					const dueDate = new Date(nextNotificationTime);
 					dueDate.setDate(dueDate.getDate() + (i * intervalDays));
-					dueDate.setHours(14, 45, 0, 0);
+					dueDate.setHours(18, 0, 0, 0);
 					
 					const waterTask = {
 						plantId: newPlant.id,
@@ -137,7 +137,7 @@ export const PlantProvider = ({children}) => {
 					await addTask(waterTask);
 
 					// Don't schedule notifications when adding plants
-					// Notifications should only be sent at 14:45 for tasks due that day
+					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
 
@@ -241,7 +241,7 @@ export const PlantProvider = ({children}) => {
 						nextDueDate = new Date(task.nextDueDate);
 						nextDueDate.setDate(nextDueDate.getDate() + task.intervalDays);
 					}
-					nextDueDate.setHours(14, 45, 0, 0);
+					nextDueDate.setHours(18, 0, 0, 0);
 
 					const newTask = {
 						plantId: task.plantId,
@@ -255,7 +255,7 @@ export const PlantProvider = ({children}) => {
 					await addTask(newTask);
 
 					// Don't schedule notifications when completing tasks
-					// Notifications should only be sent at 14:45 for tasks due that day
+					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
 
