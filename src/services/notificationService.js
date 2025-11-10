@@ -110,6 +110,38 @@ export const notificationService = {
   },
 
   /**
+   * Schedule a notification for watering reminder without checking permissions
+   * Used when permissions have already been checked (e.g., in batch scheduling)
+   * @param {Object} params - Notification parameters
+   * @param {string} params.plantName - Name of the plant
+   * @param {string} params.plantImage - URI of plant image (optional)
+   * @param {Date} params.triggerDate - When to trigger the notification (already set to 18:00)
+   * @param {number} params.taskId - Task ID for tracking
+   * @returns {Promise<string>} Notification identifier
+   */
+  async scheduleWateringNotificationWithoutPermissionCheck({ plantName, plantImage, triggerDate, taskId }) {
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '💧 Time to Water!',
+          body: `Your ${plantName} needs watering today.`,
+          data: { taskId, plantName },
+          sound: true,
+          priority: Notifications.AndroidNotificationPriority.HIGH,
+        },
+        trigger: {
+          date: triggerDate,
+        },
+      });
+
+      return notificationId;
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+      return null;
+    }
+  },
+
+  /**
    * Schedule repeating notification for a task
    * @param {Object} params - Notification parameters
    * @param {string} params.plantName - Name of the plant
