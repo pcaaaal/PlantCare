@@ -179,22 +179,13 @@ export default function AddPlantScreen({navigation}) {
 
 			await addPlant(plantData);
 
-			Alert.alert(
-				'Success',
-				`${plantName} has been added successfully!`,
-				[
-					{
-						text: 'OK',
-						onPress: () => {
-							setPlantName('');
-							setDescription('');
-							setImageUri(null);
-							setSelectedPlant(null);
-							navigation.goBack();
-						},
-					},
-				],
-			);
+			// Reset form and navigate back without showing alert
+			// (User doesn't want notifications when adding plants)
+			setPlantName('');
+			setDescription('');
+			setImageUri(null);
+			setSelectedPlant(null);
+			navigation.goBack();
 		} catch (error) {
 			console.error('Error adding plant:', error);
 			Alert.alert('Error', 'Failed to add plant');

@@ -15,6 +15,9 @@ Notifications.setNotificationHandler({
 /**
  * Notification service for managing plant care reminders
  */
+// Track if notification channel has been set up (Android only)
+let channelConfigured = false;
+
 export const notificationService = {
   /**
    * Request notification permissions
@@ -35,14 +38,16 @@ export const notificationService = {
         return false;
       }
       
-      // Configure channel for Android
-      if (Platform.OS === 'android') {
+      // Configure channel for Android only once
+      // Setting the channel multiple times can trigger unwanted notifications
+      if (Platform.OS === 'android' && !channelConfigured) {
         await Notifications.setNotificationChannelAsync('default', {
           name: 'Plant Care Reminders',
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: '#4CAF50',
         });
+        channelConfigured = true;
       }
       
       return true;
