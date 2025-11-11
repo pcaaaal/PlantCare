@@ -103,16 +103,25 @@ export const PlantProvider = ({children}) => {
 				const intervalDays = parseWateringInterval(
 					plantData.wateringGeneralBenchmark.value,
 				);
-				const today = new Date();
-				today.setHours(18, 0, 0, 0);
-				const startDate = today.toISOString();
+				const now = new Date();
+				const nextNotificationTime = new Date();
+				nextNotificationTime.setHours(18, 0, 0, 0);
+				
+				// If it's close to or past 18:00 (within 1 minute), start from tomorrow
+				// This ensures notifications are always scheduled for the future with a buffer
+				const oneMinuteFromNow = new Date(now.getTime() + 60000);
+				if (nextNotificationTime < oneMinuteFromNow) {
+					nextNotificationTime.setDate(nextNotificationTime.getDate() + 1);
+				}
+				
+				const startDate = nextNotificationTime.toISOString();
 				
 				// Generate tasks for the next 3 months
 				const threeMonthsInDays = 90; // Approximately 3 months
 				const numberOfTasks = Math.ceil(threeMonthsInDays / intervalDays);
 				
 				for (let i = 0; i < numberOfTasks; i++) {
-					const dueDate = new Date(today);
+					const dueDate = new Date(nextNotificationTime);
 					dueDate.setDate(dueDate.getDate() + (i * intervalDays));
 					dueDate.setHours(18, 0, 0, 0);
 					
@@ -125,17 +134,10 @@ export const PlantProvider = ({children}) => {
 						startDate: startDate,
 						completed: false,
 					};
-					const createdTask = await addTask(waterTask);
+					await addTask(waterTask);
 
-					// Schedule notification for the first task only
-					if (i === 0) {
-						await notificationService.scheduleWateringNotification({
-							plantName: plantData.name,
-							plantImage: plantData.imageUri,
-							triggerDate: dueDate,
-							taskId: createdTask.id,
-						});
-					}
+					// Don't schedule notifications when adding plants
+					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
 
@@ -250,15 +252,10 @@ export const PlantProvider = ({children}) => {
 						startDate: task.startDate || new Date().toISOString(),
 						completed: false,
 					};
-					const createdTask = await addTask(newTask);
+					await addTask(newTask);
 
-					// Schedule notification for the new task
-					await notificationService.scheduleWateringNotification({
-						plantName: plant.name,
-						plantImage: plant.imageUri,
-						triggerDate: nextDueDate,
-						taskId: createdTask.id,
-					});
+					// Don't schedule notifications when completing tasks
+					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
 

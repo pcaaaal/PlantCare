@@ -31,7 +31,7 @@ export default function PlantDetailScreen({ route, navigation }) {
   const handleCompleteTask = async (taskId) => {
     try {
       await completeTask(taskId);
-      Alert.alert('Success', 'Task completed!');
+      // No alert shown - user doesn't want notifications when completing tasks
     } catch (error) {
       Alert.alert('Error', 'Failed to complete task');
     }
