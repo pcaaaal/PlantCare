@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -6,6 +6,7 @@ import {StatusBar} from 'expo-status-bar';
 import {View, StyleSheet} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {PlantProvider} from './src/context/PlantContext';
+import {dailyNotificationScheduler} from './src/services/dailyNotificationScheduler';
 import HomeScreen from './src/screens/HomeScreen';
 import AddPlantScreen from './src/screens/AddPlantScreen';
 import PlantDetailScreen from './src/screens/PlantDetailScreen';
@@ -87,6 +88,16 @@ function TabNavigator() {
 }
 
 export default function App() {
+	// Schedule notifications on app startup
+	useEffect(() => {
+		const initializeNotifications = async () => {
+			console.log('Initializing notifications on app startup...');
+			await dailyNotificationScheduler.scheduleNotificationsForToday();
+		};
+		
+		initializeNotifications();
+	}, []);
+
 	return (
 		<PlantProvider>
 			<NavigationContainer>

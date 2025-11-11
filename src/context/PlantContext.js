@@ -1,6 +1,7 @@
 import React, {createContext, useState, useEffect, useContext} from 'react';
 import {storageService} from '../services/storageService';
 import {notificationService} from '../services/notificationService';
+import {dailyNotificationScheduler} from '../services/dailyNotificationScheduler';
 import {plantApiService} from '../services/plantApiService';
 
 const PlantContext = createContext();
@@ -135,10 +136,10 @@ export const PlantProvider = ({children}) => {
 						completed: false,
 					};
 					await addTask(waterTask);
-
-					// Don't schedule notifications when adding plants
-					// Notifications should only be sent at 18:00 for tasks due that day
 				}
+				
+				// Re-schedule all notifications to include the new tasks
+				await dailyNotificationScheduler.rescheduleAll();
 			}
 
 			return newPlant;
@@ -165,7 +166,9 @@ export const PlantProvider = ({children}) => {
 			await storageService.deletePlant(id);
 			setPlants((prev) => prev.filter((p) => p.id !== id));
 			setTasks((prev) => prev.filter((t) => t.plantId !== id));
-			// Note: Notifications will be rescheduled on next app start
+			
+			// Re-schedule all notifications after deleting a plant
+			await dailyNotificationScheduler.rescheduleAll();
 		} catch (error) {
 			console.error('Error deleting plant:', error);
 			throw error;
@@ -253,15 +256,15 @@ export const PlantProvider = ({children}) => {
 						completed: false,
 					};
 					await addTask(newTask);
-
-					// Don't schedule notifications when completing tasks
-					// Notifications should only be sent at 18:00 for tasks due that day
 				}
 			}
 
 			// Reload tasks to get updated data
 			const updatedTasks = await storageService.getTasks();
 			setTasks(updatedTasks);
+			
+			// Re-schedule all notifications after completing a task
+			await dailyNotificationScheduler.rescheduleAll();
 		} catch (error) {
 			console.error('Error completing task:', error);
 			throw error;
