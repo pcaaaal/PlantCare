@@ -9,6 +9,15 @@ This document explains how to test the push notification feature that sends remi
 3. **Auto-Refresh**: On app startup, all notifications are rescheduled to ensure they're up-to-date
 4. **Dynamic Updates**: When you add/complete/delete tasks, notifications are automatically rescheduled
 
+### Important: No Need to Open App Daily
+
+When you add a plant, the app creates tasks for the next **3 months** (90 days) and schedules notifications for ALL of them at once. This means:
+
+- **Day 1**: Add a plant → System schedules 90 days worth of notifications
+- **Day 2-90**: Notifications fire at 18:00 each day **without opening the app**
+
+You do NOT need to open the app every day to receive notifications. All notifications are stored in the native OS notification system and will fire at their scheduled times regardless of whether the app is running.
+
 ## Testing Instructions
 
 ### 1. Testing Permissions

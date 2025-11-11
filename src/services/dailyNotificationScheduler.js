@@ -4,13 +4,23 @@ import {storageService} from './storageService';
 
 /**
  * Daily Notification Scheduler
- * Schedules notifications for tasks due today at 18:00
+ * Schedules notifications for all pending tasks at 18:00 on their due dates
  * This ensures push notifications are sent even when the app is closed
+ * 
+ * NOTE: Despite the misleading function name, this schedules notifications for
+ * ALL pending tasks (not just today), which can span weeks or months into the future.
+ * Once scheduled, notifications will fire at 18:00 on their due dates without
+ * requiring the app to be opened.
  */
 export const dailyNotificationScheduler = {
   /**
-   * Schedule notifications for all tasks due today
-   * Should be called on app startup
+   * Schedule notifications for all pending tasks at 18:00 on their due dates
+   * Should be called on app startup to ensure all notifications are up-to-date
+   * 
+   * This schedules notifications for ALL pending tasks, not just today's tasks.
+   * For example, if you have tasks due over the next 3 months, all notifications
+   * will be scheduled at once and will fire at 18:00 on their respective dates
+   * even if the app is never opened again.
    */
   async scheduleNotificationsForToday() {
     try {
@@ -32,9 +42,10 @@ export const dailyNotificationScheduler = {
       // Filter tasks that are not completed and have a due date
       const pendingTasks = tasks.filter(task => !task.completed && task.nextDueDate);
       
-      console.log(`Found ${pendingTasks.length} pending tasks`);
+      console.log(`Found ${pendingTasks.length} pending tasks to schedule notifications for`);
 
-      // Schedule notifications for each pending task
+      // Schedule notifications for each pending task at 18:00 on their due dates
+      // These notifications will fire even if the app is closed
       let scheduledCount = 0;
       for (const task of pendingTasks) {
         const plant = plants.find(p => p.id === task.plantId);

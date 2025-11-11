@@ -64,14 +64,23 @@ Documentation:
 
 ## How It Works
 
+### Important: Multi-Day Scheduling
+
+**Key Feature**: When a plant is added, tasks are created for the **next 3 months** (90 days), and notifications are scheduled for ALL of them at once. The user does NOT need to open the app daily to receive notifications.
+
+**Example Timeline**:
+- **Day 1**: User adds plant → System creates 90 tasks → Schedules 90 notifications
+- **Day 2-90**: Notifications fire at 18:00 each day (app can remain closed)
+
 ### Startup Flow
 ```
 1. User opens app
 2. App.js useEffect triggers
 3. dailyNotificationScheduler.scheduleNotificationsForToday()
-4. Loads all pending tasks from storage
+   (NOTE: Despite the name, this schedules ALL pending tasks, not just today)
+4. Loads all pending tasks from storage (can be weeks/months of tasks)
 5. Schedules notification at 18:00 for each task
-6. Notifications stored in native OS
+6. Notifications stored in native OS (persist even if app is closed)
 ```
 
 ### Runtime Flow
