@@ -76,7 +76,7 @@ export const notificationService = {
 
       // Set notification time to 14:15 (2:15 PM)
       const notificationDate = new Date(triggerDate);
-      notificationDate.setHours(14, 15, 0, 0);
+      notificationDate.setHours(14, 18, 0, 0);
 
       // Ensure notification is scheduled for the future with at least 1 minute buffer
       // This prevents immediate notifications when adding plants or completing tasks
@@ -119,7 +119,7 @@ export const notificationService = {
    * @param {number} params.minute - Minute (0-59)
    * @returns {Promise<string>} Notification identifier
    */
-  async scheduleRepeatingNotification({ plantName, intervalDays, taskId, hour = 14, minute = 15 }) {
+  async scheduleRepeatingNotification({ plantName, intervalDays, taskId, hour = 14, minute = 18 }) {
     try {
       const hasPermission = await this.requestPermissions();
       if (!hasPermission) {
