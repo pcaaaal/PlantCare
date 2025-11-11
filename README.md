@@ -16,7 +16,7 @@ Dies ist eine mobile App für die Pflanzenpflege, entwickelt mit React Native un
 - **Plant Database**: Pre-populated with common plants and their care requirements
 - **Task Management**: Automatic watering task creation based on plant requirements
 - **Task Tracking**: View upcoming tasks sorted by due date
-- **Notifications**: Receive reminders when plants need watering
+- **Notifications**: Receive push notifications at 18:00 (6 PM) when plants need watering - works even when app is closed
 - **Data Persistence**: All data stored locally using AsyncStorage
 - **Navigation**: Bottom tab navigation (Home, Add, Profile)
 - **Plant Details**: View plant information, tasks, and care instructions
