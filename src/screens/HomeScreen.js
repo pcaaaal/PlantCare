@@ -15,9 +15,9 @@ const {width} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.6;
 
 export default function HomeScreen({navigation}) {
-	const {plants, getUpcomingTasks, completeTask, loading} = usePlants();
+	const {plants, tasks, getTodaysTasks, completeTask, loading} = usePlants();
 
-	const upcomingTasks = getUpcomingTasks();
+	const todaysTasks = getTodaysTasks();
 
 	const getTaskIcon = (type) => {
 		switch (type) {
@@ -38,6 +38,39 @@ export default function HomeScreen({navigation}) {
 		const diffTime = due - now;
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 		return diffDays;
+	};
+
+	const hasWateringTaskToday = (plantId) => {
+		return todaysTasks.some((task) => 
+			task.plantId === plantId && 
+			task.type === 'Water' && 
+			!task.completed
+		);
+	};
+
+	const hasOverdueWateringTask = (plantId) => {
+		const now = new Date();
+		now.setHours(0, 0, 0, 0);
+
+		return tasks.some((task) => {
+			if (task.plantId !== plantId || task.type !== 'Water' || task.completed) {
+				return false;
+			}
+			const dueDate = new Date(task.dueDate);
+			return dueDate < now;
+		});
+	};
+
+	const getPlantCardStyle = (plantId) => {
+		const baseStyle = [styles.plantCard];
+		
+		if (hasOverdueWateringTask(plantId)) {
+			baseStyle.push(styles.plantCardOverdue);
+		} else if (hasWateringTaskToday(plantId)) {
+			baseStyle.push(styles.plantCardWateringToday);
+		}
+		
+		return baseStyle;
 	};
 
 	if (loading) {
@@ -75,7 +108,7 @@ export default function HomeScreen({navigation}) {
 						{plants.map((plant) => (
 							<TouchableOpacity
 								key={plant.id}
-								style={styles.plantCard}
+								style={getPlantCardStyle(plant.id)}
 								onPress={() =>
 									navigation.navigate('PlantDetail', {
 										plantId: plant.id,
@@ -120,8 +153,8 @@ export default function HomeScreen({navigation}) {
 				<View style={styles.tasksSection}>
 					<Text style={styles.tasksHeader}>Tasks Today</Text>
 					<View style={styles.tasksList}>
-						{upcomingTasks.length > 0 ? (
-							upcomingTasks.map((task) => {
+						{todaysTasks.length > 0 ? (
+							todaysTasks.map((task) => {
 								const daysUntil = getDaysUntilDue(task.dueDate);
 								const plant = plants.find(
 									(p) => p.id === task.plantId,
@@ -243,6 +276,24 @@ const styles = StyleSheet.create({
 		overflow: 'hidden',
 		marginRight: 15,
 		backgroundColor: '#F5F5F5',
+	},
+	plantCardWateringToday: {
+		borderWidth: 4,
+		borderColor: '#FFC107',
+		shadowColor: '#FFC107',
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 8,
+	},
+	plantCardOverdue: {
+		borderWidth: 4,
+		borderColor: '#F44336',
+		shadowColor: '#F44336',
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 8,
 	},
 	plantImage: {
 		width: '100%',

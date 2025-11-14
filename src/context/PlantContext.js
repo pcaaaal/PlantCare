@@ -5,8 +5,8 @@ import {plantApiService} from '../services/plantApiService';
 
 const PlantContext = createContext();
 
-const DEFAULT_NOTIFICATION_HOUR = 11;
-const DEFAULT_NOTIFICATION_MINUTE = 30;
+const DEFAULT_NOTIFICATION_HOUR = 18;
+const DEFAULT_NOTIFICATION_MINUTE = 0;
 
 /**
  * Parse watering interval from benchmark value
@@ -369,24 +369,23 @@ export const PlantProvider = ({children}) => {
 			.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 	};
 
-	/**
-	 * Get upcoming tasks (due in the next 7 days)
-	 */
-	const getUpcomingTasks = () => {
-		const now = new Date();
-		now.setHours(0, 0, 0, 0); // Start of today
-		const sevenDaysFromNow = new Date(
-			now.getTime() + 7 * 24 * 60 * 60 * 1000,
-		);
+  /**
+   * Get todays tasks
+   */
+  const getTodaysTasks = () => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Start of today
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999); // End of today
 
-		return tasks
-			.filter((t) => {
-				if (!t.dueDate || t.completed) return false;
-				const dueDate = new Date(t.dueDate);
-				return dueDate >= now && dueDate <= sevenDaysFromNow;
-			})
-			.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-	};
+    return tasks
+      .filter((t) => {
+        if (!t.dueDate || t.completed) return false;
+        const dueDate = new Date(t.dueDate);
+        return dueDate >= now && dueDate <= endOfDay;
+      })
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  };
 
 	/**
 	 * Get overdue tasks
@@ -433,7 +432,7 @@ export const PlantProvider = ({children}) => {
 		updateTask,
 		completeTask,
 		getTasksForPlant,
-		getUpcomingTasks,
+		getTodaysTasks,
 		getOverdueTasks,
 		refreshData: loadData,
 		searchPlantCatalog,
