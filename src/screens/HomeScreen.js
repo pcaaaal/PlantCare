@@ -9,6 +9,7 @@ import {
 	Dimensions,
 } from 'react-native';
 import {usePlants} from '../context/PlantContext';
+import {NotificationDebugger} from '../components/NotificationDebugger';
 
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.6;
@@ -113,6 +114,8 @@ export default function HomeScreen({navigation}) {
 					</View>
 				)}
 
+				{/* <NotificationDebugger /> */}
+
 				{/* Tasks Section */}
 				<View style={styles.tasksSection}>
 					<Text style={styles.tasksHeader}>Tasks Today</Text>
@@ -126,19 +129,19 @@ export default function HomeScreen({navigation}) {
 									(p) => p.id === task.plantId,
 								);
 								return (
-									<View
-										key={task.id}
-										style={styles.taskItem}
-									>
+									<View key={task.id} style={styles.taskItem}>
 										<Text style={styles.taskIcon}>
 											{getTaskIcon(task.type)}
 										</Text>
 										<TouchableOpacity
 											style={styles.taskContent}
 											onPress={() =>
-												navigation.navigate('PlantDetail', {
-													plantId: task.plantId,
-												})
+												navigation.navigate(
+													'PlantDetail',
+													{
+														plantId: task.plantId,
+													},
+												)
 											}
 										>
 											<Text style={styles.taskTitle}>
@@ -171,7 +174,11 @@ export default function HomeScreen({navigation}) {
 												await completeTask(task.id);
 											}}
 										>
-											<Text style={styles.completeButtonText}>
+											<Text
+												style={
+													styles.completeButtonText
+												}
+											>
 												✓
 											</Text>
 										</TouchableOpacity>
