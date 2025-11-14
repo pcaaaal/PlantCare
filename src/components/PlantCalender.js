@@ -52,9 +52,9 @@ export default function PlantCalendar({
 				return;
 			}
 
-			if (task.nextDueDate) {
-				const dueDate = new Date(task.nextDueDate);
-				
+			if (task.dueDate) {
+				const dueDate = new Date(task.dueDate);
+
 				// Show task if it's in the current month
 				if (
 					dueDate.getMonth() === month &&
@@ -226,13 +226,19 @@ export default function PlantCalendar({
 													</Text>
 												</View>
 												<TouchableOpacity
-													style={styles.completeButton}
+													style={
+														styles.completeButton
+													}
 													onPress={() =>
 														onTaskPress &&
 														onTaskPress(task.id)
 													}
 												>
-													<Text style={styles.completeButtonText}>
+													<Text
+														style={
+															styles.completeButtonText
+														}
+													>
 														✓
 													</Text>
 												</TouchableOpacity>

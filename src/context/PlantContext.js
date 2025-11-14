@@ -5,6 +5,9 @@ import {plantApiService} from '../services/plantApiService';
 
 const PlantContext = createContext();
 
+const DEFAULT_NOTIFICATION_HOUR = 11;
+const DEFAULT_NOTIFICATION_MINUTE = 30;
+
 /**
  * Parse watering interval from benchmark value
  * @param {string} value - Value like "7-10" or "7"
@@ -23,6 +26,53 @@ function parseWateringInterval(value) {
 	return parseInt(value) || 7;
 }
 
+/**
+ * Calculate next notification date at 6 PM
+ * Ensures the date is at least 2 minutes in the future
+ * @param {Date} baseDate - Base date to calculate from
+ * @returns {Date} Next valid notification date
+ */
+function getNextNotificationDate(baseDate = new Date()) {
+	const notificationDate = new Date(baseDate);
+	notificationDate.setHours(
+		DEFAULT_NOTIFICATION_HOUR,
+		DEFAULT_NOTIFICATION_MINUTE,
+		0,
+		0,
+	);
+
+	const now = new Date();
+	const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000);
+
+	// If the notification time has passed or is too soon, move to next day
+	if (notificationDate < twoMinutesFromNow) {
+		notificationDate.setDate(notificationDate.getDate() + 1);
+	}
+
+	return notificationDate;
+}
+
+/**
+ * Generate task dates for the next N months
+ * @param {number} intervalDays - Days between each task
+ * @param {number} months - Number of months to generate (default 3)
+ * @returns {Array<Date>} Array of task dates
+ */
+function generateTaskDates(intervalDays, months = 3) {
+	const dates = [];
+	const startDate = getNextNotificationDate();
+	const daysToGenerate = months * 30; // Approximate days
+	const numberOfTasks = Math.ceil(daysToGenerate / intervalDays);
+
+	for (let i = 0; i < numberOfTasks; i++) {
+		const taskDate = new Date(startDate);
+		taskDate.setDate(taskDate.getDate() + i * intervalDays);
+		dates.push(taskDate);
+	}
+
+	return dates;
+}
+
 export const PlantProvider = ({children}) => {
 	const [plants, setPlants] = useState([]);
 	const [tasks, setTasks] = useState([]);
@@ -35,7 +85,10 @@ export const PlantProvider = ({children}) => {
 	}, []);
 
 	const initializeNotifications = async () => {
-		await notificationService.requestPermissions();
+		const hasPermission = await notificationService.requestPermissions();
+		if (hasPermission) {
+			console.log('Notification permissions granted');
+		}
 	};
 
 	const loadData = async () => {
@@ -68,7 +121,6 @@ export const PlantProvider = ({children}) => {
 			return results;
 		} catch (error) {
 			console.error('Error searching plant catalog:', error);
-			// Return empty array on error, allowing user to proceed without API data
 			return [];
 		}
 	};
@@ -88,6 +140,9 @@ export const PlantProvider = ({children}) => {
 		}
 	};
 
+	/**
+	 * Add a new plant and create its watering tasks with notifications
+	 */
 	const addPlant = async (plantData) => {
 		try {
 			// Validate required fields
@@ -98,47 +153,45 @@ export const PlantProvider = ({children}) => {
 			const newPlant = await storageService.addPlant(plantData);
 			setPlants((prev) => [...prev, newPlant]);
 
-			// Create water tasks for the next 3 months
+			// Create watering tasks for the next 3 months
 			if (plantData.wateringGeneralBenchmark) {
 				const intervalDays = parseWateringInterval(
 					plantData.wateringGeneralBenchmark.value,
 				);
-				const now = new Date();
-				const nextNotificationTime = new Date();
-				nextNotificationTime.setHours(18, 0, 0, 0);
-				
-				// If it's close to or past 18:00 (within 1 minute), start from tomorrow
-				// This ensures notifications are always scheduled for the future with a buffer
-				const oneMinuteFromNow = new Date(now.getTime() + 60000);
-				if (nextNotificationTime < oneMinuteFromNow) {
-					nextNotificationTime.setDate(nextNotificationTime.getDate() + 1);
-				}
-				
-				const startDate = nextNotificationTime.toISOString();
-				
-				// Generate tasks for the next 3 months
-				const threeMonthsInDays = 90; // Approximately 3 months
-				const numberOfTasks = Math.ceil(threeMonthsInDays / intervalDays);
-				
-				for (let i = 0; i < numberOfTasks; i++) {
-					const dueDate = new Date(nextNotificationTime);
-					dueDate.setDate(dueDate.getDate() + (i * intervalDays));
-					dueDate.setHours(18, 0, 0, 0);
-					
+
+				// Generate all task dates upfront
+				const taskDates = generateTaskDates(intervalDays, 3);
+
+				// Create tasks and schedule notifications
+				const notificationParams = [];
+				for (const taskDate of taskDates) {
 					const waterTask = {
 						plantId: newPlant.id,
 						type: 'Water',
 						title: `Water ${plantData.name}`,
 						intervalDays: intervalDays,
-						nextDueDate: dueDate.toISOString(),
-						startDate: startDate,
+						dueDate: taskDate.toISOString(),
 						completed: false,
 					};
-					await addTask(waterTask);
 
-					// Don't schedule notifications when adding plants
-					// Notifications should only be sent at 18:00 for tasks due that day
+					const newTask = await storageService.addTask(waterTask);
+					setTasks((prev) => [...prev, newTask]);
+
+					// Collect notification parameters
+					notificationParams.push({
+						plantName: plantData.name,
+						triggerDate: taskDate,
+						taskId: newTask.id,
+					});
 				}
+
+				// Schedule all notifications at once
+				await notificationService.scheduleMultipleNotifications(
+					notificationParams,
+				);
+				console.log(
+					`Created ${taskDates.length} tasks with notifications for ${plantData.name}`,
+				);
 			}
 
 			return newPlant;
@@ -160,12 +213,26 @@ export const PlantProvider = ({children}) => {
 		}
 	};
 
+	/**
+	 * Delete a plant and all its associated tasks and notifications
+	 */
 	const deletePlant = async (id) => {
 		try {
+			// Get all tasks for this plant to cancel their notifications
+			const plantTasks = tasks.filter((t) => t.plantId === id);
+
+			// Cancel notifications (if you store notificationId in tasks)
+			// Otherwise, cancel all notifications for safety and reschedule remaining
+			await notificationService.cancelNotificationsForPlant(id);
+
+			// Delete from storage
 			await storageService.deletePlant(id);
+
+			// Update state
 			setPlants((prev) => prev.filter((p) => p.id !== id));
 			setTasks((prev) => prev.filter((t) => t.plantId !== id));
-			// Note: Notifications will be rescheduled on next app start
+
+			console.log(`Deleted plant ${id} and all associated tasks`);
 		} catch (error) {
 			console.error('Error deleting plant:', error);
 			throw error;
@@ -195,12 +262,14 @@ export const PlantProvider = ({children}) => {
 		}
 	};
 
+	/**
+	 * Complete a task and create the next one in the sequence
+	 * Much simpler: just create one new task for the next interval
+	 */
 	const completeTask = async (taskId) => {
 		try {
-			// Get the task before marking it complete
-			const currentTasks = await storageService.getTasks();
-			const task = currentTasks.find((t) => t.id === taskId);
-			
+			const task = tasks.find((t) => t.id === taskId);
+
 			if (!task) {
 				throw new Error('Task not found');
 			}
@@ -211,79 +280,147 @@ export const PlantProvider = ({children}) => {
 				completedAt: new Date().toISOString(),
 			});
 
-			// Create a new task based on the watering interval
+			// Update local state
+			setTasks((prev) =>
+				prev.map((t) =>
+					t.id === taskId ? {...t, completed: true} : t,
+				),
+			);
+
+			// Create next task if this is a recurring task
 			if (task.intervalDays) {
 				const plant = plants.find((p) => p.id === task.plantId);
 				if (plant) {
-					// Find the last (latest) non-completed task for this plant
-					const plantTasks = currentTasks.filter(
-						t => t.plantId === task.plantId && 
-						!t.completed && 
-						t.id !== taskId &&
-						t.nextDueDate
-					);
-					
-					// Sort by due date to find the latest
-					plantTasks.sort((a, b) => 
-						new Date(b.nextDueDate) - new Date(a.nextDueDate)
-					);
-					
-					const lastTask = plantTasks[0];
-					
-					// Calculate next due date based on the last task or the completed task
-					let nextDueDate;
-					if (lastTask) {
-						// Add intervalDays to the last task's due date
-						nextDueDate = new Date(lastTask.nextDueDate);
-						nextDueDate.setDate(nextDueDate.getDate() + task.intervalDays);
-					} else {
-						// No other tasks exist, add intervalDays to completed task's due date
-						nextDueDate = new Date(task.nextDueDate);
-						nextDueDate.setDate(nextDueDate.getDate() + task.intervalDays);
-					}
-					nextDueDate.setHours(18, 0, 0, 0);
+					// Find the latest uncompleted task for this plant
+					const plantTasks = tasks
+						.filter(
+							(t) =>
+								t.plantId === task.plantId &&
+								!t.completed &&
+								t.id !== taskId,
+						)
+						.sort(
+							(a, b) => new Date(b.dueDate) - new Date(a.dueDate),
+						);
 
+					// Calculate next due date
+					let nextDueDate;
+					if (plantTasks.length > 0) {
+						// Add interval to the latest existing task
+						nextDueDate = new Date(plantTasks[0].dueDate);
+						nextDueDate.setDate(
+							nextDueDate.getDate() + task.intervalDays,
+						);
+					} else {
+						// No future tasks exist, create one based on current task
+						nextDueDate = new Date(task.dueDate);
+						nextDueDate.setDate(
+							nextDueDate.getDate() + task.intervalDays,
+						);
+					}
+
+					// Ensure it's at 9:45 AM
+					nextDueDate.setHours(
+						DEFAULT_NOTIFICATION_HOUR,
+						DEFAULT_NOTIFICATION_MINUTE,
+						0,
+						0,
+					);
+
+					// Create the new task
 					const newTask = {
 						plantId: task.plantId,
 						type: task.type,
 						title: task.title,
 						intervalDays: task.intervalDays,
-						nextDueDate: nextDueDate.toISOString(),
-						startDate: task.startDate || new Date().toISOString(),
+						dueDate: nextDueDate.toISOString(),
 						completed: false,
 					};
-					await addTask(newTask);
 
-					// Don't schedule notifications when completing tasks
-					// Notifications should only be sent at 18:00 for tasks due that day
+					const createdTask = await storageService.addTask(newTask);
+					setTasks((prev) => [...prev, createdTask]);
+
+					// Schedule notification for the new task
+					await notificationService.scheduleNotification({
+						plantName: plant.name,
+						triggerDate: nextDueDate,
+						taskId: createdTask.id,
+					});
+
+					console.log(
+						`Created next task for ${
+							plant.name
+						} due ${nextDueDate.toLocaleDateString()}`,
+					);
 				}
 			}
-
-			// Reload tasks to get updated data
-			const updatedTasks = await storageService.getTasks();
-			setTasks(updatedTasks);
 		} catch (error) {
 			console.error('Error completing task:', error);
 			throw error;
 		}
 	};
 
-  const getTasksForPlant = (plantId) => {
-    return tasks.filter(t => t.plantId === plantId && !t.completed);
-  };
+	/**
+	 * Get all uncompleted tasks for a specific plant
+	 */
+	const getTasksForPlant = (plantId) => {
+		return tasks
+			.filter((t) => t.plantId === plantId && !t.completed)
+			.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+	};
 
-  const getUpcomingTasks = () => {
-    const now = new Date();
-    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-    
-    return tasks
-      .filter(t => {
-        if (!t.nextDueDate || t.completed) return false;
-        const dueDate = new Date(t.nextDueDate);
-        return dueDate <= threeDaysFromNow;
-      })
-      .sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
-  };
+	/**
+	 * Get upcoming tasks (due in the next 7 days)
+	 */
+	const getUpcomingTasks = () => {
+		const now = new Date();
+		now.setHours(0, 0, 0, 0); // Start of today
+		const sevenDaysFromNow = new Date(
+			now.getTime() + 7 * 24 * 60 * 60 * 1000,
+		);
+
+		return tasks
+			.filter((t) => {
+				if (!t.dueDate || t.completed) return false;
+				const dueDate = new Date(t.dueDate);
+				return dueDate >= now && dueDate <= sevenDaysFromNow;
+			})
+			.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+	};
+
+	/**
+	 * Get overdue tasks
+	 */
+	const getOverdueTasks = () => {
+		const now = new Date();
+		now.setHours(0, 0, 0, 0);
+
+		return tasks
+			.filter((t) => {
+				if (!t.dueDate || t.completed) return false;
+				const dueDate = new Date(t.dueDate);
+				return dueDate < now;
+			})
+			.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+	};
+
+	/**
+	 * Debug function to check scheduled notifications
+	 */
+	const debugNotifications = async () => {
+		const scheduled =
+			await notificationService.getAllScheduledNotifications();
+		console.log('=== Scheduled Notifications ===');
+		scheduled.forEach((n) => {
+			console.log(
+				`- ${n.content.title}: ${new Date(
+					n.trigger.value,
+				).toLocaleString()}`,
+			);
+		});
+		console.log('==============================');
+		return scheduled;
+	};
 
 	const value = {
 		plants,
@@ -297,9 +434,11 @@ export const PlantProvider = ({children}) => {
 		completeTask,
 		getTasksForPlant,
 		getUpcomingTasks,
+		getOverdueTasks,
 		refreshData: loadData,
 		searchPlantCatalog,
 		getPlantDetails,
+		debugNotifications,
 	};
 
 	return (

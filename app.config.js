@@ -31,9 +31,9 @@ export default {
 					'This app sends notifications to remind you to water your plants.',
 			},
 			icon: {
-				dark: './assets/icon/ios-dark.png',
-				light: './assets/icon/ios-light.png',
-				tinted: './assets/icon/ios-tinted.png',
+				dark: './assets/icons/ios-dark.png',
+				light: './assets/icons/ios-light.png',
+				tinted: './assets/icons/ios-tinted.png',
 			},
 		},
 		android: {
