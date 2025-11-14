@@ -5,6 +5,9 @@ import {plantApiService} from '../services/plantApiService';
 
 const PlantContext = createContext();
 
+const DEFAULT_NOTIFICATION_HOUR = 11;
+const DEFAULT_NOTIFICATION_MINUTE = 30;
+
 /**
  * Parse watering interval from benchmark value
  * @param {string} value - Value like "7-10" or "7"
@@ -31,7 +34,12 @@ function parseWateringInterval(value) {
  */
 function getNextNotificationDate(baseDate = new Date()) {
 	const notificationDate = new Date(baseDate);
-	notificationDate.setHours(11, 0, 0, 0);
+	notificationDate.setHours(
+		DEFAULT_NOTIFICATION_HOUR,
+		DEFAULT_NOTIFICATION_MINUTE,
+		0,
+		0,
+	);
 
 	const now = new Date();
 	const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000);
@@ -312,7 +320,12 @@ export const PlantProvider = ({children}) => {
 					}
 
 					// Ensure it's at 9:45 AM
-					nextDueDate.setHours(11, 0, 0, 0);
+					nextDueDate.setHours(
+						DEFAULT_NOTIFICATION_HOUR,
+						DEFAULT_NOTIFICATION_MINUTE,
+						0,
+						0,
+					);
 
 					// Create the new task
 					const newTask = {
