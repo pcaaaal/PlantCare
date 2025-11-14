@@ -8,8 +8,7 @@ import {
 	Image,
 	Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { usePlants } from '../context/PlantContext';
+import {usePlants} from '../context/PlantContext';
 import PlantCalendar from '../components/PlantCalender';
 import {Ionicons} from '@expo/vector-icons';
 
@@ -35,36 +34,36 @@ export default function PlantDetailScreen({route, navigation}) {
 		}
 	}, [plantId, plants, allTasks]);
 
-  const handleCompleteTask = async (taskId) => {
-    try {
-      await completeTask(taskId);
-      // No alert shown - user doesn't want notifications when completing tasks
-    } catch (error) {
-      Alert.alert('Error', 'Failed to complete task');
-    }
-  };
+	const handleCompleteTask = async (taskId) => {
+		try {
+			await completeTask(taskId);
+			// No alert shown - user doesn't want notifications when completing tasks
+		} catch (error) {
+			Alert.alert('Error', 'Failed to complete task');
+		}
+	};
 
-  const handleDeletePlant = () => {
-    Alert.alert(
-      'Delete Plant',
-      `Are you sure you want to delete ${plant.name}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deletePlant(plantId);
-              navigation.goBack();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete plant');
-            }
-          },
-        },
-      ]
-    );
-  };
+	const handleDeletePlant = () => {
+		Alert.alert(
+			'Delete Plant',
+			`Are you sure you want to delete ${plant.name}?`,
+			[
+				{text: 'Cancel', style: 'cancel'},
+				{
+					text: 'Delete',
+					style: 'destructive',
+					onPress: async () => {
+						try {
+							await deletePlant(plantId);
+							navigation.goBack();
+						} catch (error) {
+							Alert.alert('Error', 'Failed to delete plant');
+						}
+					},
+				},
+			],
+		);
+	};
 
 	if (!plant) {
 		return (
@@ -74,44 +73,49 @@ export default function PlantDetailScreen({route, navigation}) {
 		);
 	}
 
-  return (
-    <View style={styles.container}>
-      <ScrollView>
-        {/* Header with Plant Image */}
-        <View style={styles.imageContainer}>
-          {plant.imageUri ? (
-            <Image source={{ uri: plant.imageUri }} style={styles.plantImage} />
-          ) : (
-            <View style={styles.plantImagePlaceholder}>
-              <Text style={styles.plantImagePlaceholderText}>🌿</Text>
-            </View>
-          )}
-          
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
+	return (
+		<View style={styles.container}>
+			<ScrollView>
+				{/* Header with Plant Image */}
+				<View style={styles.imageContainer}>
+					{plant.imageUri ? (
+						<Image
+							source={{uri: plant.imageUri}}
+							style={styles.plantImage}
+						/>
+					) : (
+						<View style={styles.plantImagePlaceholder}>
+							<Text style={styles.plantImagePlaceholderText}>
+								🌿
+							</Text>
+						</View>
+					)}
 
-          <TouchableOpacity 
-            style={styles.menuButton}
-            onPress={handleDeletePlant}
-          >
-            <Ionicons name="trash" size={24} color="#000000ff" />
-          </TouchableOpacity>
-        </View>
+					<TouchableOpacity
+						style={styles.backButton}
+						onPress={() => navigation.goBack()}
+					>
+						<Text style={styles.backButtonText}>←</Text>
+					</TouchableOpacity>
 
-        {/* Calendar Section */}
-        <View style={styles.calendarSection}>
-          <PlantCalendar
-            tasks={tasks}
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-            onMonthChange={setSelectedDate}
-            onTaskPress={handleCompleteTask}
-          />
-        </View>
+					<TouchableOpacity
+						style={styles.menuButton}
+						onPress={handleDeletePlant}
+					>
+						<Ionicons name="trash" size={24} color="#000000ff" />
+					</TouchableOpacity>
+				</View>
+
+				{/* Calendar Section */}
+				<View style={styles.calendarSection}>
+					<PlantCalendar
+						tasks={tasks}
+						selectedDate={selectedDate}
+						onDateSelect={setSelectedDate}
+						onMonthChange={setSelectedDate}
+						onTaskPress={handleCompleteTask}
+					/>
+				</View>
 
 				{/* Plant Info Section */}
 				<View style={styles.infoSection}>
