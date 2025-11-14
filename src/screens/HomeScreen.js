@@ -122,9 +122,7 @@ export default function HomeScreen({navigation}) {
 					<View style={styles.tasksList}>
 						{upcomingTasks.length > 0 ? (
 							upcomingTasks.map((task) => {
-								const daysUntil = getDaysUntilDue(
-									task.nextDueDate,
-								);
+								const daysUntil = getDaysUntilDue(task.dueDate);
 								const plant = plants.find(
 									(p) => p.id === task.plantId,
 								);
