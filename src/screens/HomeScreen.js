@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {usePlants} from '../context/PlantContext';
 import {NotificationDebugger} from '../components/NotificationDebugger';
+import TasksToday from '../components/TasksToday';
 
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.6;
@@ -41,10 +42,11 @@ export default function HomeScreen({navigation}) {
 	};
 
 	const hasWateringTaskToday = (plantId) => {
-		return todaysTasks.some((task) => 
-			task.plantId === plantId && 
-			task.type === 'Water' && 
-			!task.completed
+		return todaysTasks.some(
+			(task) =>
+				task.plantId === plantId &&
+				task.type === 'Water' &&
+				!task.completed,
 		);
 	};
 
@@ -53,7 +55,11 @@ export default function HomeScreen({navigation}) {
 		now.setHours(0, 0, 0, 0);
 
 		return tasks.some((task) => {
-			if (task.plantId !== plantId || task.type !== 'Water' || task.completed) {
+			if (
+				task.plantId !== plantId ||
+				task.type !== 'Water' ||
+				task.completed
+			) {
 				return false;
 			}
 			const dueDate = new Date(task.dueDate);
@@ -63,13 +69,13 @@ export default function HomeScreen({navigation}) {
 
 	const getPlantCardStyle = (plantId) => {
 		const baseStyle = [styles.plantCard];
-		
+
 		if (hasOverdueWateringTask(plantId)) {
 			baseStyle.push(styles.plantCardOverdue);
 		} else if (hasWateringTaskToday(plantId)) {
 			baseStyle.push(styles.plantCardWateringToday);
 		}
-		
+
 		return baseStyle;
 	};
 
@@ -163,79 +169,15 @@ export default function HomeScreen({navigation}) {
 				{/* <NotificationDebugger /> */}
 
 				{/* Tasks Section */}
-				<View style={styles.tasksSection}>
-					<Text style={styles.tasksHeader}>Tasks Today</Text>
-					<View style={styles.tasksList}>
-						{todaysTasks.length > 0 ? (
-							todaysTasks.map((task) => {
-								const daysUntil = getDaysUntilDue(task.dueDate);
-								const plant = plants.find(
-									(p) => p.id === task.plantId,
-								);
-								return (
-									<View key={task.id} style={styles.taskItem}>
-										<Text style={styles.taskIcon}>
-											{getTaskIcon(task.type)}
-										</Text>
-										<TouchableOpacity
-											style={styles.taskContent}
-											onPress={() =>
-												navigation.navigate(
-													'PlantDetail',
-													{
-														plantId: task.plantId,
-													},
-												)
-											}
-										>
-											<Text style={styles.taskTitle}>
-												{task.title}
-											</Text>
-											{plant && (
-												<Text style={styles.taskPlant}>
-													{plant.name}
-												</Text>
-											)}
-										</TouchableOpacity>
-										<Text
-											style={[
-												styles.taskDays,
-												daysUntil === 0 &&
-													styles.taskDaysToday,
-												daysUntil < 0 &&
-													styles.taskDaysOverdue,
-											]}
-										>
-											{daysUntil === 0
-												? 'Today'
-												: daysUntil < 0
-												? 'Overdue'
-												: `${daysUntil}d`}
-										</Text>
-										<TouchableOpacity
-											style={styles.completeButton}
-											onPress={async () => {
-												await completeTask(task.id);
-											}}
-										>
-											<Text
-												style={
-													styles.completeButtonText
-												}
-											>
-												✓
-											</Text>
-										</TouchableOpacity>
-									</View>
-								);
-							})
-						) : (
-							<Text style={styles.noTasks}>
-								No upcoming tasks
-							</Text>
-						)}
-					</View>
-				</View>
+				<TasksToday
+					todaysTasks={todaysTasks}
+					plants={plants}
+					navigation={navigation}
+					completeTask={completeTask}
+					getTaskIcon={getTaskIcon}
+					getDaysUntilDue={getDaysUntilDue}
+					styles={styles}
+				/>
 			</ScrollView>
 		</View>
 	);
@@ -294,7 +236,7 @@ const styles = StyleSheet.create({
 		borderWidth: 4,
 		borderColor: '#FFC107',
 		shadowColor: '#FFC107',
-		shadowOffset: { width: 0, height: 0 },
+		shadowOffset: {width: 0, height: 0},
 		shadowOpacity: 0.3,
 		shadowRadius: 8,
 		elevation: 8,
@@ -303,7 +245,7 @@ const styles = StyleSheet.create({
 		borderWidth: 4,
 		borderColor: '#F44336',
 		shadowColor: '#F44336',
-		shadowOffset: { width: 0, height: 0 },
+		shadowOffset: {width: 0, height: 0},
 		shadowOpacity: 0.3,
 		shadowRadius: 8,
 		elevation: 8,
@@ -409,14 +351,15 @@ const styles = StyleSheet.create({
 		width: 36,
 		height: 36,
 		borderRadius: 18,
-		backgroundColor: '#4CAF50',
+		borderColor: '#4CAF50',
+		borderWidth: 2,
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginLeft: 8,
 	},
 	completeButtonText: {
 		fontSize: 20,
-		color: '#FFFFFF',
+		color: '#4CAF50',
 		fontWeight: 'bold',
 	},
 	noTasks: {

@@ -12,10 +12,12 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@jest/globals": "^30.2.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
+    "@testing-library/react-hooks": "^8.0.1",
     "babel-preset-expo": "^54.0.6",
     "expo": "^54.0.22",
     "expo-camera": "~17.0.9",
