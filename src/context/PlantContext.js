@@ -369,23 +369,23 @@ export const PlantProvider = ({children}) => {
 			.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 	};
 
-  /**
-   * Get todays tasks
-   */
-  const getTodaysTasks = () => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Start of today
-    const endOfDay = new Date(now);
-    endOfDay.setHours(23, 59, 59, 999); // End of today
+	/**
+	 * Get todays tasks
+	 */
+	const getTodaysTasks = () => {
+		const now = new Date();
+		now.setHours(0, 0, 0, 0); // Start of today
+		const endOfDay = new Date(now);
+		endOfDay.setHours(23, 59, 59, 999); // End of today
 
-    return tasks
-      .filter((t) => {
-        if (!t.dueDate || t.completed) return false;
-        const dueDate = new Date(t.dueDate);
-        return dueDate >= now && dueDate <= endOfDay;
-      })
-      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-  };
+		return tasks
+			.filter((t) => {
+				if (!t.dueDate || t.completed) return false;
+				const dueDate = new Date(t.dueDate);
+				return dueDate >= now && dueDate <= endOfDay;
+			})
+			.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+	};
 
 	/**
 	 * Get overdue tasks

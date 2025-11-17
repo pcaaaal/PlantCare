@@ -1,0 +1,198 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`TasksToday renders correctly with no tasks (snapshot) 1`] = `
+<View
+  style={
+    {
+      "padding": 1,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "fontSize": 1,
+      }
+    }
+  >
+    Tasks Today
+  </Text>
+  <View
+    style={
+      {
+        "paddingBottom": 1,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "fontSize": 1,
+        }
+      }
+    >
+      No upcoming tasks
+    </Text>
+  </View>
+</View>
+`;
+
+exports[`TasksToday renders correctly with tasks (snapshot) 1`] = `
+<View
+  style={
+    {
+      "padding": 1,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "fontSize": 1,
+      }
+    }
+  >
+    Tasks Today
+  </Text>
+  <View
+    style={
+      {
+        "paddingBottom": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "fontSize": 1,
+          }
+        }
+      >
+        💧
+      </Text>
+      <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "flex": 1,
+            "opacity": 1,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "fontSize": 1,
+            }
+          }
+        >
+          Water Ficus
+        </Text>
+        <Text
+          style={
+            {
+              "fontSize": 1,
+            }
+          }
+        >
+          Ficus
+        </Text>
+      </View>
+      <Text
+        style={
+          [
+            {
+              "fontSize": 1,
+            },
+            {
+              "color": "orange",
+            },
+            false,
+          ]
+        }
+      >
+        Today
+      </Text>
+      <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "height": 10,
+            "opacity": 1,
+            "width": 10,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "fontSize": 1,
+            }
+          }
+        >
+          ✓
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
