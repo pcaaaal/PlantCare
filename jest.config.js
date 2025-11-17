@@ -12,4 +12,6 @@ module.exports = {
     '!src/**/*.test.{js,jsx}',
     '!src/**/__tests__/**',
   ],
+  testEnvironment: 'node',
+  silent: false,
 };

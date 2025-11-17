@@ -1,3 +1,21 @@
+// Unterdrücke React 19 act() Warnungen für bekannte Fälle
+const originalError = console.error;
+beforeAll(() => {
+  console.error = (...args) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('An update to Root inside a test was not wrapped in act')
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
+});
+
 // Mock expo-notifications
 jest.mock('expo-notifications', () => ({
   scheduleNotificationAsync: jest.fn(),

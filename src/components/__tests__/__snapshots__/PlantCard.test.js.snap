@@ -1,7 +1,135 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`PlantCard sollte korrekt gerendert werden (Snapshot Test) 1`] = `null`;
+exports[`PlantCard sollte korrekt gerendert werden (Snapshot Test) 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#fff",
+      "borderRadius": 10,
+      "elevation": 3,
+      "marginVertical": 8,
+      "padding": 15,
+      "shadowColor": "#000",
+      "shadowOffset": {
+        "height": 2,
+        "width": 0,
+      },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 4,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#2d5f2e",
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "marginBottom": 5,
+      }
+    }
+  >
+    Monstera Deliciosa
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#5a8f5b",
+        "fontSize": 14,
+      }
+    }
+  >
+    Gießen: 
+    Alle 3 Tage
+  </Text>
+</View>
+`;
 
-exports[`PlantCard sollte mit leerem wateringSchedule korrekt gerendert werden 1`] = `null`;
+exports[`PlantCard sollte mit leerem wateringSchedule korrekt gerendert werden 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#fff",
+      "borderRadius": 10,
+      "elevation": 3,
+      "marginVertical": 8,
+      "padding": 15,
+      "shadowColor": "#000",
+      "shadowOffset": {
+        "height": 2,
+        "width": 0,
+      },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 4,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#2d5f2e",
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "marginBottom": 5,
+      }
+    }
+  >
+    Kaktus
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#5a8f5b",
+        "fontSize": 14,
+      }
+    }
+  >
+    Gießen: 
+  </Text>
+</View>
+`;
 
-exports[`PlantCard sollte mit verschiedenen Props korrekt gerendert werden 1`] = `null`;
+exports[`PlantCard sollte mit verschiedenen Props korrekt gerendert werden 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#fff",
+      "borderRadius": 10,
+      "elevation": 3,
+      "marginVertical": 8,
+      "padding": 15,
+      "shadowColor": "#000",
+      "shadowOffset": {
+        "height": 2,
+        "width": 0,
+      },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 4,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#2d5f2e",
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "marginBottom": 5,
+      }
+    }
+  >
+    Aloe Vera
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#5a8f5b",
+        "fontSize": 14,
+      }
+    }
+  >
+    Gießen: 
+    Einmal pro Woche
+  </Text>
+</View>
+`;
