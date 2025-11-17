@@ -73,6 +73,19 @@ export default function HomeScreen({navigation}) {
 		return baseStyle;
 	};
 
+	const getPlantPriority = (plantId) => {
+		if (hasOverdueWateringTask(plantId)) {
+			return 0; // Höchste Priorität - Rot
+		} else if (hasWateringTaskToday(plantId)) {
+			return 1; // Mittlere Priorität - Gelb
+		}
+		return 2; // Niedrigste Priorität - Normal
+	};
+
+	const sortedPlants = [...plants].sort((a, b) => {
+		return getPlantPriority(a.id) - getPlantPriority(b.id);
+	});
+
 	if (loading) {
 		return (
 			<View style={styles.container}>
@@ -105,7 +118,7 @@ export default function HomeScreen({navigation}) {
 						style={styles.carousel}
 						contentContainerStyle={styles.carouselContent}
 					>
-						{plants.map((plant) => (
+						{sortedPlants.map((plant) => (
 							<TouchableOpacity
 								key={plant.id}
 								style={getPlantCardStyle(plant.id)}
