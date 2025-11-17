@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`PlantCard sollte korrekt gerendert werden (Snapshot Test) 1`] = `null`;
+
+exports[`PlantCard sollte mit leerem wateringSchedule korrekt gerendert werden 1`] = `null`;
+
+exports[`PlantCard sollte mit verschiedenen Props korrekt gerendert werden 1`] = `null`;
