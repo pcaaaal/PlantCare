@@ -5,6 +5,14 @@ import PlantCard from '../PlantCard';
 describe('PlantCard', () => {
   let component;
 
+  const mockPlant = {
+    id: '1',
+    name: 'Monstera Deliciosa',
+    imageUri: 'https://example.com/plant.jpg',
+  };
+
+  const mockOnPress = jest.fn();
+
   afterEach(() => {
     if (component) {
       renderer.act(() => {
@@ -12,14 +20,17 @@ describe('PlantCard', () => {
       });
       component = null;
     }
+    mockOnPress.mockClear();
   });
 
   it('sollte korrekt gerendert werden (Snapshot Test)', () => {
     renderer.act(() => {
       component = renderer.create(
         <PlantCard 
-          name="Monstera Deliciosa" 
-          wateringSchedule="Alle 3 Tage" 
+          plant={mockPlant}
+          width={200}
+          height={280}
+          onPress={mockOnPress}
         />
       );
     });
@@ -28,12 +39,15 @@ describe('PlantCard', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it('sollte mit verschiedenen Props korrekt gerendert werden', () => {
+  it('sollte mit überfälliger Aufgabe korrekt gerendert werden', () => {
     renderer.act(() => {
       component = renderer.create(
         <PlantCard 
-          name="Aloe Vera" 
-          wateringSchedule="Einmal pro Woche" 
+          plant={{ ...mockPlant, name: 'Aloe Vera' }}
+          width={200}
+          height={280}
+          hasOverdueTask={true}
+          onPress={mockOnPress}
         />
       );
     });
@@ -42,12 +56,15 @@ describe('PlantCard', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it('sollte mit leerem wateringSchedule korrekt gerendert werden', () => {
+  it('sollte mit heutiger Aufgabe korrekt gerendert werden', () => {
     renderer.act(() => {
       component = renderer.create(
         <PlantCard 
-          name="Kaktus" 
-          wateringSchedule="" 
+          plant={{ ...mockPlant, name: 'Kaktus', imageUri: null }}
+          width={200}
+          height={280}
+          hasTodayTask={true}
+          onPress={mockOnPress}
         />
       );
     });

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {usePlants} from '../context/PlantContext';
 import {NotificationDebugger} from '../components/NotificationDebugger';
+import PlantCard from '../components/PlantCard';
 import TasksToday from '../components/TasksToday';
 
 const {width} = Dimensions.get('window');
@@ -125,37 +126,19 @@ export default function HomeScreen({navigation}) {
 						contentContainerStyle={styles.carouselContent}
 					>
 						{sortedPlants.map((plant) => (
-							<TouchableOpacity
+							<PlantCard
 								key={plant.id}
-								style={getPlantCardStyle(plant.id)}
+								plant={plant}
+								width={CARD_WIDTH}
+								height={280}
+								hasOverdueTask={hasOverdueWateringTask(plant.id)}
+								hasTodayTask={hasWateringTaskToday(plant.id)}
 								onPress={() =>
 									navigation.navigate('PlantDetail', {
 										plantId: plant.id,
 									})
 								}
-							>
-								{plant.imageUri ? (
-									<Image
-										source={{uri: plant.imageUri}}
-										style={styles.plantImage}
-									/>
-								) : (
-									<View style={styles.plantImagePlaceholder}>
-										<Text
-											style={
-												styles.plantImagePlaceholderText
-											}
-										>
-											🌿
-										</Text>
-									</View>
-								)}
-								<View style={styles.plantCardOverlay}>
-									<Text style={styles.plantCardName}>
-										{plant.name}
-									</Text>
-								</View>
-							</TouchableOpacity>
+							/>
 						))}
 					</ScrollView>
 				) : (
