@@ -396,14 +396,15 @@ const styles = StyleSheet.create({
 		width: 36,
 		height: 36,
 		borderRadius: 18,
-		backgroundColor: '#4CAF50',
+		borderColor: '#4CAF50',
+		borderWidth: 2,
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginLeft: 8,
 	},
 	completeButtonText: {
 		fontSize: 20,
-		color: '#FFFFFF',
+		color: '#4CAF50',
 		fontWeight: 'bold',
 	},
 	noTasksText: {
