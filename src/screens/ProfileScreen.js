@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { usePlants } from '../context/PlantContext';
 import { storageService } from '../services/storageService';
-import { initializeSampleData, resetWithSampleData } from '../utils/sampleData';
 
 export default function ProfileScreen() {
   const { plants, tasks, refreshData } = usePlants();
@@ -86,22 +85,6 @@ export default function ProfileScreen() {
             PlantCare helps you keep your plants healthy and happy by reminding you when to water them and tracking their care.
           </Text>
           <Text style={styles.version}>Version 1.0.0</Text>
-        </View>
-
-        <View style={styles.buttonGroup}>
-          <TouchableOpacity 
-            style={styles.primaryButton}
-            onPress={handleLoadSampleData}
-          >
-            <Text style={styles.primaryButtonText}>Load Sample Data</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.dangerButton}
-            onPress={handleClearData}
-          >
-            <Text style={styles.dangerButtonText}>Clear All Data</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </View>
