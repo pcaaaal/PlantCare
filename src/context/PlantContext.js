@@ -152,7 +152,6 @@ export const PlantProvider = ({children}) => {
 
 			const newPlant = await storageService.addPlant(plantData);
 			setPlants((prev) => [...prev, newPlant]);
-
 			// Create watering tasks for the next 3 months
 			if (plantData.wateringGeneralBenchmark) {
 				const intervalDays = parseWateringInterval(
@@ -169,9 +168,10 @@ export const PlantProvider = ({children}) => {
 						plantId: newPlant.id,
 						type: 'Water',
 						title: `Water ${plantData.name}`,
-						intervalDays: intervalDays,
+						intervalDays,
 						dueDate: taskDate.toISOString(),
 						completed: false,
+						notificationId: null,
 					};
 
 					const newTask = await storageService.addTask(waterTask);
@@ -186,9 +186,25 @@ export const PlantProvider = ({children}) => {
 				}
 
 				// Schedule all notifications at once
-				await notificationService.scheduleMultipleNotifications(
-					notificationParams,
-				);
+				for (const params of notificationParams) {
+					const id = await notificationService.scheduleNotification(
+						params,
+					);
+
+					// Update task to store the notificationId
+					await storageService.updateTask(params.taskId, {
+						notificationId: id,
+					});
+
+					setTasks((prev) =>
+						prev.map((t) =>
+							t.id === params.taskId
+								? {...t, notificationId: id}
+								: t,
+						),
+					);
+				}
+
 				console.log(
 					`Created ${taskDates.length} tasks with notifications for ${plantData.name}`,
 				);
@@ -221,10 +237,13 @@ export const PlantProvider = ({children}) => {
 			// Get all tasks for this plant to cancel their notifications
 			const plantTasks = tasks.filter((t) => t.plantId === id);
 
-			// Cancel notifications (if you store notificationId in tasks)
-			// Otherwise, cancel all notifications for safety and reschedule remaining
-			await notificationService.cancelNotificationsForPlant(id);
-
+			for (const t of plantTasks) {
+				if (t.notificationId) {
+					await notificationService.cancelNotification(
+						t.notificationId,
+					);
+				}
+			}
 			// Delete from storage
 			await storageService.deletePlant(id);
 
@@ -274,16 +293,26 @@ export const PlantProvider = ({children}) => {
 				throw new Error('Task not found');
 			}
 
+			// 1. Cancel notification for this task
+			if (task.notificationId) {
+				await notificationService.cancelNotification(
+					task.notificationId,
+				);
+			}
+
 			// Mark task as completed
 			await storageService.updateTask(taskId, {
 				completed: true,
 				completedAt: new Date().toISOString(),
+				notificationId: null,
 			});
 
 			// Update local state
 			setTasks((prev) =>
 				prev.map((t) =>
-					t.id === taskId ? {...t, completed: true} : t,
+					t.id === taskId
+						? {...t, completed: true, notificationId: null}
+						: t,
 				),
 			);
 
@@ -319,7 +348,6 @@ export const PlantProvider = ({children}) => {
 						);
 					}
 
-					// Ensure it's at 9:45 AM
 					nextDueDate.setHours(
 						DEFAULT_NOTIFICATION_HOUR,
 						DEFAULT_NOTIFICATION_MINUTE,
@@ -340,12 +368,24 @@ export const PlantProvider = ({children}) => {
 					const createdTask = await storageService.addTask(newTask);
 					setTasks((prev) => [...prev, createdTask]);
 
-					// Schedule notification for the new task
-					await notificationService.scheduleNotification({
-						plantName: plant.name,
-						triggerDate: nextDueDate,
-						taskId: createdTask.id,
+					const newNotifId =
+						await notificationService.scheduleNotification({
+							plantName: plant.name,
+							triggerDate: nextDueDate,
+							taskId: createdTask.id,
+						});
+
+					await storageService.updateTask(createdTask.id, {
+						notificationId: newNotifId,
 					});
+
+					setTasks((prev) =>
+						prev.map((t) =>
+							t.id === createdTask.id
+								? {...t, notificationId: newNotifId}
+								: t,
+						),
+					);
 
 					console.log(
 						`Created next task for ${

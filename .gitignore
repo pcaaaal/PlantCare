@@ -77,5 +77,5 @@ expo-env.d.ts
 .env
 .env.*.local
 
-ios/
-android/
+/android
+/ios
