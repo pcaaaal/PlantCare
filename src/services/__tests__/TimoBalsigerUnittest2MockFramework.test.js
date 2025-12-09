@@ -236,14 +236,13 @@ describe('TimoBalsigerUnittest2 - Mock Framework Demo', () => {
       await plantApiService.getPlantDetails(1);
       await plantApiService.searchPlants('cactus');
 
-      // Verify call order
-      const calls = [
-        ...plantApiService.searchPlants.mock.calls,
-        ...plantApiService.getPlantDetails.mock.calls,
-      ];
-
+      // Verify call order and total calls
       expect(plantApiService.searchPlants).toHaveBeenCalledTimes(2);
       expect(plantApiService.getPlantDetails).toHaveBeenCalledTimes(1);
+      
+      // Verify the order of the searchPlants calls
+      expect(plantApiService.searchPlants).toHaveBeenNthCalledWith(1, 'aloe');
+      expect(plantApiService.searchPlants).toHaveBeenNthCalledWith(2, 'cactus');
     });
   });
 
@@ -372,9 +371,10 @@ describe('TimoBalsigerUnittest2 - Mock Framework Demo', () => {
 
       // Verify return value
       expect(result).toBe(mockReturnValue);
-      expect(plantApiService.searchPlants.mock.results[0].value).resolves.toBe(
-        mockReturnValue
-      );
+      // Access mock results and verify it matches
+      const mockResults = plantApiService.searchPlants.mock.results;
+      expect(mockResults).toHaveLength(1);
+      await expect(mockResults[0].value).resolves.toBe(mockReturnValue);
     });
   });
 });
