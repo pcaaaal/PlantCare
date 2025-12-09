@@ -26,7 +26,10 @@ Die folgenden Anforderungen aus der Issue wurden vollständig umgesetzt:
 | Datei | Beschreibung | Größe |
 |-------|-------------|-------|
 | `src/services/__tests__/TimoBalsigerUnittest2.test.js` | **Haupt-Testdatei** mit 23 Unit Tests | 15 KB |
+| `src/services/__tests__/TimoBalsigerUnittest2MockFramework.test.js` | **Mock Framework Demo** (Mockito-Stil) | 13 KB |
+| `__mocks__/plantApiService.js` | **Mock-Klasse** für plantApiService | 2 KB |
 | `UNITTEST_DOCUMENTATION.md` | **Ausführliche Dokumentation** mit Learnings | 7.4 KB |
+| `UNITTEST_MOCK_FRAMEWORK.md` | **Mock Framework Dokumentation** (Jest wie Mockito) | 11 KB |
 | `UNITTEST_SCREENSHOTS.md` | **Code-Snippets** und Test-Übersicht | 12 KB |
 | `UNITTEST_README.md` | **Diese Datei** - Zentrale Übersicht | - |
 
@@ -93,17 +96,25 @@ Die `plantApiService` Klasse ist verantwortlich für die Kommunikation mit der P
 - Konfiguration: `jest.config.js`
 - Test-Umgebung: Node.js
 
-### Mock Framework: **Jest Mocking**
-Jest bietet integrierte Mocking-Funktionalität:
+### Mock Framework: **Jest Mocking** (äquivalent zu Mockito)
+Jest bietet integrierte Mocking-Funktionalität ähnlich zu Mockito:
 - `jest.fn()` - Function Mocks
-- `jest.mock()` - Module Mocks  
-- `jest.spyOn()` - Spy auf existierende Funktionen
-- `mockResolvedValueOnce()` / `mockRejectedValueOnce()` - Async Mocks
+- `jest.mock()` - Module Mocks (wie `@Mock` in Mockito)
+- `jest.spyOn()` - Spy auf existierende Funktionen (wie `@Spy`)
+- `mockResolvedValue()` - Rückgabewert konfigurieren (wie `when().thenReturn()`)
+- `mockRejectedValue()` - Exception werfen (wie `when().thenThrow()`)
+- `toHaveBeenCalled()` - Aufruf verifizieren (wie `verify()`)
+
+**Siehe auch:** `UNITTEST_MOCK_FRAMEWORK.md` für detaillierte Mockito-Vergleiche
+
+### Mock-Klasse
+- **`__mocks__/plantApiService.js`** - Separate Mock-Klasse (Mockito-Stil)
 
 ### Gemockte Abhängigkeiten
-1. **`global.fetch`** - HTTP-Requests zur API
-2. **`expo-constants`** - Konfigurationswerte (API Key, URL)
-3. **`console.log` / `console.error`** - Console-Output
+1. **`plantApiService`** - Mock-Klasse für API-Service (wie Mockito Mock-Objekt)
+2. **`global.fetch`** - HTTP-Requests zur API
+3. **`expo-constants`** - Konfigurationswerte (API Key, URL)
+4. **`console.log` / `console.error`** - Console-Output
 
 ---
 
@@ -250,7 +261,9 @@ Die Tests decken ab:
 | Dokument | Zweck |
 |----------|-------|
 | `UNITTEST_DOCUMENTATION.md` | Detaillierte Beschreibung aller Tests und ausführliche Learnings |
+| `UNITTEST_MOCK_FRAMEWORK.md` | **Mock Framework Dokumentation** - Jest vs. Mockito Vergleich |
 | `UNITTEST_SCREENSHOTS.md` | Code-Snippets und visuelle Übersicht der Test-Struktur |
+| `__mocks__/plantApiService.js` | Mock-Klasse Definition (Mockito-Stil) |
 | `jest.config.js` | Jest-Konfiguration des Projekts |
 | `src/services/plantApiService.js` | Die getestete Klasse |
 
