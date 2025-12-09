@@ -1,4 +1,6 @@
-# CopilotUnittest2 - Unit Tests für PlantCare
+# TimoBalsigerUnittest2 - Unit Tests für PlantCare
+
+**Autor:** Timo Balsiger
 
 ## 📋 Zusammenfassung
 
@@ -14,7 +16,7 @@ Die folgenden Anforderungen aus der Issue wurden vollständig umgesetzt:
 2. ✅ **Unit Test Framework**: Jest (äquivalent zu JUnit/XUnit)
 3. ✅ **Mock Framework**: Jest Mocking (äquivalent zu Moq/Mockito)
 4. ✅ **Grenzwerte und Fehlerwerte**: 23 Tests mit umfassender Abdeckung
-5. ✅ **Naming Convention**: "CopilotUnittest2" als Test-Suite Name
+5. ✅ **Naming Convention**: "TimoBalsigerUnittest2" als Test-Suite Name
 6. ✅ **Dokumentation**: Screenshots (Code-Snippets) und Beschreibung der Learnings
 
 ---
@@ -23,7 +25,7 @@ Die folgenden Anforderungen aus der Issue wurden vollständig umgesetzt:
 
 | Datei | Beschreibung | Größe |
 |-------|-------------|-------|
-| `src/services/__tests__/CopilotUnittest2.test.js` | **Haupt-Testdatei** mit 23 Unit Tests | 15 KB |
+| `src/services/__tests__/TimoBalsigerUnittest2.test.js` | **Haupt-Testdatei** mit 23 Unit Tests | 15 KB |
 | `UNITTEST_DOCUMENTATION.md` | **Ausführliche Dokumentation** mit Learnings | 7.4 KB |
 | `UNITTEST_SCREENSHOTS.md` | **Code-Snippets** und Test-Übersicht | 12 KB |
 | `UNITTEST_README.md` | **Diese Datei** - Zentrale Übersicht | - |
@@ -109,7 +111,7 @@ Jest bietet integrierte Mocking-Funktionalität:
 
 ### Einzelne Test-Suite ausführen:
 ```bash
-npm test CopilotUnittest2
+npm test TimoBalsigerUnittest2
 ```
 
 ### Alle Tests ausführen:
@@ -177,7 +179,7 @@ Alle Code-Snippets und detaillierte Test-Beispiele finden Sie in:
 ## 🔍 Test-Struktur (Beispiel)
 
 ```javascript
-describe('CopilotUnittest2 - plantApiService', () => {
+describe('TimoBalsigerUnittest2 - plantApiService', () => {
   beforeEach(() => {
     jest.clearAllMocks(); // Reset vor jedem Test
   });
@@ -272,8 +274,8 @@ Die Tests dienen als:
 
 ## 👤 Erstellt von
 
-**Name**: Copilot (GitHub Copilot AI Agent)  
-**Test-Suite**: CopilotUnittest2  
+**Name**: Timo Balsiger  
+**Test-Suite**: TimoBalsigerUnittest2  
 **Datum**: Dezember 2024  
 **Framework**: Jest 30.2.0  
 **Sprache**: JavaScript (ES6+)

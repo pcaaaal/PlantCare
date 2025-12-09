@@ -1,4 +1,6 @@
-# CopilotUnittest2 - Test Code Screenshots und Übersicht
+# TimoBalsigerUnittest2 - Test Code Screenshots und Übersicht
+
+**Autor:** Timo Balsiger
 
 ## Übersicht der erstellten Tests
 
@@ -12,7 +14,8 @@ Die Test-Datei beginnt mit der Einrichtung der Mocks:
 
 ```javascript
 /**
- * CopilotUnittest2 - Unit Tests for plantApiService
+ * TimoBalsigerUnittest2 - Unit Tests for plantApiService
+ * Author: Timo Balsiger
  * 
  * This test suite demonstrates comprehensive unit testing with mocks,
  * including boundary cases, error handling, and edge cases.
@@ -46,7 +49,7 @@ jest.mock('expo-constants', () => ({
 ## 2. Test Setup mit beforeEach/afterEach
 
 ```javascript
-describe('CopilotUnittest2 - plantApiService', () => {
+describe('TimoBalsigerUnittest2 - plantApiService', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
@@ -467,13 +470,13 @@ it('sollte Sonderzeichen im Query-String korrekt kodieren', async () => {
 Die Tests können ausgeführt werden mit:
 
 ```bash
-npm test CopilotUnittest2
+npm test TimoBalsigerUnittest2
 ```
 
 Oder mit Coverage-Report:
 
 ```bash
-npm test -- --coverage CopilotUnittest2
+npm test -- --coverage TimoBalsigerUnittest2
 ```
 
 Alle Tests:
@@ -490,9 +493,9 @@ npm test
 PlantCare/
 ├── src/
 │   └── services/
-│       ├── plantApiService.js          # Zu testende Klasse
+│       ├── plantApiService.js             # Zu testende Klasse
 │       └── __tests__/
-│           └── CopilotUnittest2.test.js  # Unit Tests mit Mocks
+│           └── TimoBalsigerUnittest2.test.js  # Unit Tests mit Mocks
 ├── UNITTEST_DOCUMENTATION.md            # Ausführliche Dokumentation
 └── UNITTEST_SCREENSHOTS.md              # Dieses Dokument
 ```

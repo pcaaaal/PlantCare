@@ -1,5 +1,6 @@
 /**
- * CopilotUnittest2 - Unit Tests for plantApiService
+ * TimoBalsigerUnittest2 - Unit Tests for plantApiService
+ * Author: Timo Balsiger
  * 
  * This test suite demonstrates comprehensive unit testing with mocks,
  * including boundary cases, error handling, and edge cases.
@@ -22,7 +23,7 @@ jest.mock('expo-constants', () => ({
   },
 }));
 
-describe('CopilotUnittest2 - plantApiService', () => {
+describe('TimoBalsigerUnittest2 - plantApiService', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();

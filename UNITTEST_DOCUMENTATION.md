@@ -1,4 +1,6 @@
-# CopilotUnittest2 - Dokumentation und Lernerkenntnisse
+# TimoBalsigerUnittest2 - Dokumentation und Lernerkenntnisse
+
+**Autor:** Timo Balsiger
 
 ## Übersicht
 
@@ -14,7 +16,7 @@ Die `plantApiService` Klasse wurde für umfassende Unit Tests ausgewählt, da si
 
 ## Teststruktur
 
-### Datei: `src/services/__tests__/CopilotUnittest2.test.js`
+### Datei: `src/services/__tests__/TimoBalsigerUnittest2.test.js`
 
 ### Getestete Methoden
 
@@ -235,7 +237,7 @@ Die Tests dienen als:
 ## Ausführen der Tests
 
 ```bash
-npm test -- CopilotUnittest2
+npm test -- TimoBalsigerUnittest2
 ```
 
 Oder alle Tests:
